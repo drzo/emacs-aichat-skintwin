@@ -1,0 +1,112 @@
+#+TITLE: SkinTwin Patient Analysis Demo
+#+AUTHOR: AI Chat
+#+DATE: 2025
+#+PROPERTY: header-args :results output :exports both
+
+* Introduction to Patient Analysis
+
+This demonstration shows how to use SkinTwin to analyze a patient with a skin condition
+and generate treatment recommendations based on the OpenCog cognitive architecture.
+
+** Patient Information
+
+We'll create a sample patient with psoriasis and explore the system's treatment recommendations
+and progression predictions.
+
+* Step 1: Create a Patient
+
+First, we'll create a patient in the knowledge base using the `skintwin-add-patient` function.
+
+#+BEGIN_SRC elisp
+(skintwin-add-patient "patient-001" 
+                      '(("age" . 45)
+                        ("gender" . "male")
+                        ("skin_type" . "II")))
+
+(message "Patient created successfully")
+#+END_SRC
+
+* Step 2: Associate Condition with Patient
+
+Next, we'll associate a skin condition (psoriasis) with the patient using `skintwin-add-patient-condition`.
+
+#+BEGIN_SRC elisp
+(skintwin-add-patient-condition "patient-001" "psoriasis" 0.75 0.9)
+
+(message "Condition added to patient")
+#+END_SRC
+
+* Step 3: Patient Analysis
+
+Let's analyze the patient using `skintwin-analyze-patient` and capture the output.
+
+#+BEGIN_SRC elisp
+(defun save-analysis-output ()
+  "Analyze patient and save output to a variable."
+  (skintwin-analyze-patient "patient-001")
+  (let ((analysis-buffer (get-buffer "*SkinTwin-Patient-Analysis*")))
+    (with-current-buffer analysis-buffer
+      (buffer-string))))
+
+(save-analysis-output)
+#+END_SRC
+
+* Step 4: Query Treatments
+
+We'll query possible treatments for psoriasis using `skintwin-query-treatments`.
+
+#+BEGIN_SRC elisp
+(defun save-treatments-output ()
+  "Query treatments and save output to a variable."
+  (skintwin-query-treatments "psoriasis")
+  (let ((treatments-buffer (get-buffer "*SkinTwin-Results*")))
+    (with-current-buffer treatments-buffer
+      (buffer-string))))
+
+(save-treatments-output)
+#+END_SRC
+
+* Step 5: Disease Progression Prediction
+
+Let's predict the progression of psoriasis with corticosteroid treatment.
+
+#+BEGIN_SRC elisp
+(defun save-progression-output ()
+  "Predict disease progression and save output to a variable."
+  (skintwin-predict-progression "psoriasis" "corticosteroid" 10)
+  (let ((progression-buffer (get-buffer "*SkinTwin-Progression*")))
+    (with-current-buffer progression-buffer
+      (buffer-string))))
+
+(save-progression-output)
+#+END_SRC
+
+* Step 6: Visualize Knowledge Graph
+
+Finally, we'll visualize the knowledge graph with a focus on psoriasis.
+
+#+BEGIN_SRC elisp
+(defun save-graph-output ()
+  "Visualize knowledge graph and save output to a variable."
+  (skintwin-visualize-graph "psoriasis" 2)
+  (let ((graph-buffer (get-buffer "*SkinTwin-Graph*")))
+    (with-current-buffer graph-buffer
+      (buffer-string))))
+
+(save-graph-output)
+#+END_SRC
+
+* Conclusion
+
+This demonstration shows how SkinTwin integrates multiple cognitive components to:
+
+1. Represent patient data and conditions
+2. Analyze conditions and recommend treatments
+3. Predict disease progression with treatment
+4. Visualize the knowledge network
+
+Key insights from the OpenCog integration:
+- ECAN allocates attention to relevant concepts during analysis
+- PLN performs probabilistic reasoning about treatment efficacy
+- MOSES evolves predictive models of treatment response
+- ESN predicts temporal patterns in disease progression

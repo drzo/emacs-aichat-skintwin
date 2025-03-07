@@ -1,0 +1,159 @@
+#+TITLE: SkinTwin Knowledge Entry Demo
+#+AUTHOR: AI Chat
+#+DATE: 2025
+#+PROPERTY: header-args :results output :exports both
+
+* Introduction to Knowledge Entry
+
+This demonstration shows how to extend the SkinTwin knowledge base
+using Org mode and the OpenCog integration.
+
+** How Knowledge is Represented
+
+SkinTwin uses OpenCog's AtomSpace to represent knowledge as a graph, with:
+- Concepts (nodes representing entities)
+- Predicates (relationships between entities)
+- Inheritance links (taxonomic relationships)
+- Evaluation links (applications of predicates)
+
+Each entry can have attention values:
+- STI (Short-Term Importance)
+- LTI (Long-Term Importance)
+- VLTI (Very Long-Term Importance)
+
+* New Skin Condition: Rosacea
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.650
+:VLTI: t
+:END:
+
+Rosacea is a chronic inflammatory skin condition primarily affecting the face.
+It is characterized by persistent redness, visible blood vessels, and sometimes
+papules and pustules.
+
+has_symptom(facial_redness)
+has_symptom(visible_blood_vessels)
+has_symptom(papules)
+has_trigger(sun_exposure)
+has_trigger(spicy_foods)
+has_trigger(hot_beverages)
+has_trigger(alcohol)
+
+** Classification
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Rosacea is a skin condition that belongs to the inflammatory category.
+
+** Subtypes
+:PROPERTIES:
+:STI: 0.780
+:END:
+
+*** Erythematotelangiectatic
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+Characterized by persistent facial redness and visible blood vessels.
+affects(cheeks)
+affects(nose)
+
+*** Papulopustular
+:PROPERTIES:
+:STI: 0.730
+:END:
+
+Characterized by redness, swelling, and acne-like breakouts.
+has_symptom(papules)
+has_symptom(pustules)
+resembles(acne)
+
+*** Phymatous
+:PROPERTIES:
+:STI: 0.700
+:END:
+
+Characterized by thickening skin and an irregular surface.
+affects(nose)
+has_symptom(skin_thickening)
+has_symptom(enlarged_pores)
+
+*** Ocular
+:PROPERTIES:
+:STI: 0.710
+:END:
+
+Characterized by eye irritation and redness.
+affects(eyes)
+has_symptom(eye_irritation)
+has_symptom(dry_eyes)
+has_symptom(burning_sensation)
+
+* New Treatment: Azelaic Acid
+:PROPERTIES:
+:STI: 0.820
+:LTI: 0.630
+:VLTI: t
+:END:
+
+Azelaic acid is a naturally occurring acid with anti-inflammatory,
+antimicrobial, and antioxidant properties.
+
+mechanism(anti_inflammatory)
+mechanism(antimicrobial)
+mechanism(antioxidant)
+formulation(cream)
+formulation(gel)
+treats(rosacea)
+treats(acne)
+side_effect(skin_irritation)
+side_effect(dryness)
+
+* New Treatment: Ivermectin
+:PROPERTIES:
+:STI: 0.810
+:LTI: 0.620
+:END:
+
+Ivermectin is an antiparasitic medication also used topically for inflammatory skin conditions.
+
+mechanism(antiparasitic)
+mechanism(anti_inflammatory)
+formulation(cream)
+treats(rosacea)
+specifically_treats(papulopustular)
+targets(demodex_mites)
+side_effect(skin_irritation)
+side_effect(burning_sensation)
+
+* Environmental Factor: Demodex Mites
+:PROPERTIES:
+:STI: 0.780
+:LTI: 0.600
+:END:
+
+Microscopic mites that live in facial follicles and may contribute to rosacea.
+
+has_habitat(skin_follicles)
+affects(face)
+contributes_to(rosacea)
+contributes_to(inflammation)
+
+* Instructions for Using This File
+
+To add this knowledge to the SkinTwin system:
+
+1. Open this file in Emacs
+2. Enable SkinTwin mode with `M-x skintwin-mode`
+3. Enable OpenCog Org mode with `M-x aichat-opencog-org-mode`
+4. Convert the entire buffer to knowledge with `C-c o b`
+5. Or convert specific headings with `C-c o k`
+
+After adding the knowledge, you can:
+
+1. Query treatments for rosacea with `C-c s q` and entering "rosacea"
+2. Visualize the knowledge graph with `C-c s v`
+3. Analyze a patient with rosacea using `C-c s a`

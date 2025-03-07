@@ -1,0 +1,218 @@
+#+TITLE: OpenCog Demo in Org-mode
+#+AUTHOR: Emacs AI Chat
+#+DATE: 2025
+
+* Introduction to OpenCog in Org
+:PROPERTIES:
+:STI: 0.800
+:LTI: 0.500
+:VLTI: t
+:END:
+
+This is a demonstration of using OpenCog cognitive architecture within Org-mode.
+The integration allows for:
+
+- Representing knowledge in a hierarchical structure
+- Visualizing attention dynamics
+- Performing reasoning on concepts
+- Interactive exploration of the knowledge base
+
+** How to use this demo
+:PROPERTIES:
+:STI: 0.700
+:END:
+
+1. Enable the minor mode with ~M-x aichat-opencog-org-mode~
+2. Use ~C-c o k~ to convert this heading to knowledge base atoms
+3. Explore relationships with ~C-c o q~ to query related concepts
+4. Visualize attention with ~C-c o v~ 
+5. Apply reasoning with ~C-c o r~
+
+* Cognitive Architecture Components
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.600
+:END:
+
+** ECAN (Economic Attention Allocation Network)
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:END:
+
+ECAN manages attention allocation through economic principles:
+- Short-term importance (STI)
+- Long-term importance (LTI)
+- Very long-term importance (VLTI)
+
+It implements attention decay, spreading, and forgetting.
+
+*** Hebbian Learning
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+Strengthens connections between frequently co-activated concepts.
+
+*** Attention Spreading
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Distributes attention through the concept network.
+
+** PLN (Probabilistic Logic Networks)
+:PROPERTIES:
+:STI: 0.800
+:LTI: 0.650
+:END:
+
+PLN performs uncertain reasoning with:
+- Truth values (strength, confidence)
+- Inference rules (deduction, induction, abduction)
+- Revision for combining evidence
+
+*** Deduction
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+If A→B and B→C, then A→C with calculated truth value.
+
+*** Revision
+:PROPERTIES:
+:STI: 0.700
+:END:
+
+Combines multiple sources of evidence about the same proposition.
+
+** MOSES (Meta-Optimizing Semantic Evolutionary Search)
+:PROPERTIES:
+:STI: 0.750
+:LTI: 0.600
+:END:
+
+MOSES evolves programs to model patterns in data:
+- Program representation
+- Knob-based variation
+- Fitness evaluation
+- Program simplification
+
+*** Evolutionary Search
+:PROPERTIES:
+:STI: 0.700
+:END:
+
+Uses evolutionary algorithms to find optimal programs.
+
+*** Program Simplification
+:PROPERTIES:
+:STI: 0.650
+:END:
+
+Reduces complexity while maintaining functionality.
+
+* Knowledge Domain: Animals
+:PROPERTIES:
+:STI: 0.700
+:LTI: 0.500
+:END:
+
+** Mammals
+:PROPERTIES:
+:STI: 0.650
+:END:
+
+*** Dog
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Dogs are loyal companions.
+has_legs(4)
+can_bark(true)
+
+*** Cat
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+Cats are independent pets.
+has_legs(4)
+purrs(true)
+
+*** Human
+:PROPERTIES:
+:STI: 0.900
+:END:
+
+Humans are intelligent primates.
+has_legs(2)
+uses_tools(true)
+has_language(true)
+
+** Birds
+:PROPERTIES:
+:STI: 0.600
+:END:
+
+*** Eagle
+:PROPERTIES:
+:STI: 0.700
+:END:
+
+Eagles are birds of prey.
+has_wings(true)
+carnivore(true)
+
+*** Penguin
+:PROPERTIES:
+:STI: 0.650
+:END:
+
+Penguins are flightless birds.
+has_wings(true)
+can_fly(false)
+can_swim(true)
+
+** Reptiles
+:PROPERTIES:
+:STI: 0.550
+:END:
+
+*** Snake
+:PROPERTIES:
+:STI: 0.650
+:END:
+
+Snakes are legless reptiles.
+has_legs(0)
+has_scales(true)
+
+*** Turtle
+:PROPERTIES:
+:STI: 0.600
+:END:
+
+Turtles have protective shells.
+has_shell(true)
+has_legs(4)
+
+* Example Relationships
+:PROPERTIES:
+:STI: 0.600
+:END:
+
+This section demonstrates how relationships can be expressed and inferred:
+
+- isA(Dog, Mammal)
+- isA(Cat, Mammal)
+- isA(Eagle, Bird)
+- has_part(Bird, Wing)
+- eats(Dog, Bone)
+- eats(Cat, Fish)
+- eats(Eagle, Fish)
+
+From these relationships, PLN can infer:
+- Eagle and Cat both eat Fish (common property)
+- Dogs and Cats both have 4 legs (inherited from Mammal)

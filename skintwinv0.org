@@ -1,0 +1,884 @@
+#+TITLE: SkinTwin: OpenCog-Based Dermatological Model
+#+AUTHOR: AI Chat
+#+DATE: 2025
+#+PROPERTY: header-args :results output :exports both
+
+* Introduction to SkinTwin
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:VLTI: t
+:END:
+
+SkinTwin is a multiscale dermatological model powered by OpenCog's cognitive architecture components. 
+This implementation integrates various OpenCog modules to represent skin biology, environmental factors, 
+and clinical outcomes through a comprehensive knowledge graph and reasoning system.
+
+The project leverages:
+- AtomSpace as DermatoGraph (knowledge representation)
+- ECAN as SensoryFocus (attention allocation)
+- PLN as DermatoLogic (probabilistic reasoning)
+- MOSES as EpidermiLearn (pattern mining and model building)
+- URE as RuleDerm (rule-based reasoning)
+
+** Key Features
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+1. Multi-scale representation of skin biology
+2. Integration of molecular, cellular, and tissue-level data
+3. Predictive analytics for treatment outcomes
+4. Learning from clinical and experimental data
+5. Dynamic attention allocation to relevant information
+
+** Usage
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Enable the minor mode with ~M-x aichat-opencog-org-mode~, then use:
+- ~C-c o v~ to visualize attention flow
+- ~C-c o q~ to query related concepts
+- ~C-c o r~ to apply reasoning
+- ~C-c o k~ to convert headings to knowledge base
+- ~C-c o b~ to convert the entire buffer to the knowledge base
+
+* Skin Biology Knowledge Domain
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:END:
+
+** Epidermis
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.650
+:END:
+
+*** Keratinocyte
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Major cell type in the epidermis, responsible for barrier function.
+has_protein(keratins)
+has_location(epidermis)
+has_function(barrier_formation)
+
+*** Melanocyte
+:PROPERTIES:
+:STI: 0.780
+:END:
+
+Produces melanin pigment that determines skin color and provides UV protection.
+produces(melanin)
+has_location(epidermis_basal_layer)
+connected_to(keratinocyte)
+
+*** Langerhans_Cell
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+Immune cell in the epidermis, acts as antigen-presenting cell.
+has_function(immune_surveillance)
+has_location(epidermis)
+expresses(CD1a)
+
+** Dermis
+:PROPERTIES:
+:STI: 0.830
+:LTI: 0.620
+:END:
+
+*** Fibroblast
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Major cell in the dermis, produces collagen and other extracellular matrix components.
+produces(collagen)
+produces(elastin)
+has_location(dermis)
+
+*** Dermal_Blood_Vessel
+:PROPERTIES:
+:STI: 0.790
+:END:
+
+Supplies nutrients and oxygen to skin cells.
+has_component(endothelial_cells)
+has_function(nutrient_delivery)
+has_function(immune_cell_trafficking)
+
+*** Mast_Cell
+:PROPERTIES:
+:STI: 0.760
+:END:
+
+Immune cell involved in inflammatory and allergic responses.
+contains(histamine_granules)
+has_function(inflammatory_response)
+responds_to(allergens)
+
+** Skin_Appendages
+:PROPERTIES:
+:STI: 0.810
+:LTI: 0.600
+:END:
+
+*** Hair_Follicle
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Structure that produces hair.
+has_component(hair_shaft)
+has_component(hair_bulb)
+contains(stem_cells)
+
+*** Sebaceous_Gland
+:PROPERTIES:
+:STI: 0.780
+:END:
+
+Produces sebum, an oily substance that lubricates the skin.
+produces(sebum)
+connected_to(hair_follicle)
+regulated_by(androgens)
+
+*** Sweat_Gland
+:PROPERTIES:
+:STI: 0.770
+:END:
+
+Produces sweat for thermoregulation.
+has_type(eccrine)
+has_type(apocrine)
+has_function(thermoregulation)
+
+* Molecular Components
+:PROPERTIES:
+:STI: 0.880
+:LTI: 0.680
+:END:
+
+** Structural_Proteins
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Keratin
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Major protein in keratinocytes, provides structural integrity.
+has_type(keratin_1)
+has_type(keratin_5)
+has_type(keratin_14)
+found_in(keratinocyte)
+
+*** Collagen
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+Major protein in dermis, provides tensile strength.
+has_type(collagen_I)
+has_type(collagen_III)
+has_type(collagen_IV)
+produced_by(fibroblast)
+
+*** Elastin
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Provides elasticity to the skin.
+interacts_with(collagen)
+decreases_with(aging)
+produced_by(fibroblast)
+
+** Signaling_Molecules
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+*** Cytokine
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Signaling proteins involved in immune and inflammatory responses.
+has_type(IL-1)
+has_type(TNF-alpha)
+has_type(IL-6)
+regulates(inflammation)
+
+*** Growth_Factor
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Signaling molecules that regulate cell growth and differentiation.
+has_type(EGF)
+has_type(TGF-beta)
+has_type(FGF)
+regulates(cell_proliferation)
+
+*** Hormone
+:PROPERTIES:
+:STI: 0.790
+:END:
+
+Regulates various skin functions.
+has_type(androgens)
+has_type(estrogens)
+has_type(cortisol)
+regulates(sebum_production)
+
+* Skin Conditions
+:PROPERTIES:
+:STI: 0.870
+:LTI: 0.670
+:END:
+
+** Inflammatory_Conditions
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+*** Psoriasis
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Chronic inflammatory condition characterized by rapid keratinocyte proliferation.
+involves(T_cells)
+involves(keratinocyte_hyperproliferation)
+has_symptom(scaly_plaques)
+associated_with(IL-17)
+
+*** Eczema
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Inflammatory condition with impaired skin barrier function.
+involves(barrier_dysfunction)
+involves(immune_dysregulation)
+has_symptom(itching)
+has_symptom(redness)
+
+*** Acne
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Inflammatory condition of hair follicles and sebaceous glands.
+involves(P_acnes_bacteria)
+involves(sebum_overproduction)
+affects(hair_follicle)
+affects(sebaceous_gland)
+
+** Neoplastic_Conditions
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Basal_Cell_Carcinoma
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Common skin cancer arising from basal cells of the epidermis.
+caused_by(UV_radiation)
+affects(basal_cells)
+has_mutation(PTCH1)
+has_symptom(pearly_papule)
+
+*** Squamous_Cell_Carcinoma
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Skin cancer arising from squamous cells of the epidermis.
+caused_by(UV_radiation)
+affects(squamous_cells)
+has_mutation(TP53)
+has_symptom(scaly_patch)
+
+*** Melanoma
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Aggressive skin cancer arising from melanocytes.
+caused_by(UV_radiation)
+affects(melanocyte)
+has_mutation(BRAF)
+has_symptom(atypical_mole)
+
+* Treatments and Interventions
+:PROPERTIES:
+:STI: 0.860
+:LTI: 0.660
+:END:
+
+** Topical_Agents
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Corticosteroid
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Anti-inflammatory agent used for various inflammatory skin conditions.
+treats(eczema)
+treats(psoriasis)
+mechanism(anti_inflammatory)
+side_effect(skin_thinning)
+
+*** Retinoid
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Vitamin A derivatives used for acne and photoaging.
+treats(acne)
+treats(photoaging)
+mechanism(keratinocyte_differentiation)
+side_effect(skin_irritation)
+
+*** Antimicrobial
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Agents that kill or inhibit microorganisms.
+has_type(antibiotics)
+has_type(antifungals)
+has_type(antiseptics)
+treats(infection)
+
+** Systemic_Agents
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+*** Immunosuppressant
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Suppresses immune response in autoimmune skin conditions.
+treats(severe_psoriasis)
+treats(severe_eczema)
+has_type(cyclosporine)
+has_type(methotrexate)
+
+*** Biologic
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Targeted immunomodulatory agents derived from living organisms.
+treats(psoriasis)
+treats(severe_eczema)
+has_type(TNF_inhibitors)
+has_type(IL-17_inhibitors)
+
+*** Antihistamine
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Blocks histamine receptors to reduce allergic symptoms.
+treats(urticaria)
+treats(itching)
+has_type(H1_antagonists)
+has_type(H2_antagonists)
+
+* Environmental Factors
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.650
+:END:
+
+** UV_Radiation
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+Ultraviolet radiation from the sun or artificial sources.
+has_type(UVA)
+has_type(UVB)
+causes(DNA_damage)
+causes(photoaging)
+
+** Pollution
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Environmental pollutants that affect skin health.
+has_type(particulate_matter)
+has_type(ozone)
+has_type(nitrogen_dioxide)
+causes(oxidative_stress)
+
+** Climate
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Environmental conditions that affect skin.
+has_factor(humidity)
+has_factor(temperature)
+has_factor(wind)
+affects(barrier_function)
+
+* SkinTwin Integration Components
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:END:
+
+** DermatoGraph (AtomSpace)
+:PROPERTIES:
+:STI: 0.880
+:END:
+
+Central knowledge representation system for skin biology and interactions.
+stores(skin_biology_data)
+stores(environmental_factors)
+stores(clinical_outcomes)
+enables(complex_queries)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-create-dermatograph ()
+  "Create the main knowledge base for SkinTwin using AtomSpace."
+  (let ((kb (make-hash-table :test 'equal)))
+    ;; Initialize core concepts
+    (let ((epidermis (aichat-symbolic-concept "epidermis"))
+          (dermis (aichat-symbolic-concept "dermis"))
+          (keratinocyte (aichat-symbolic-concept "keratinocyte"))
+          (melanocyte (aichat-symbolic-concept "melanocyte"))
+          (fibroblast (aichat-symbolic-concept "fibroblast")))
+      
+      ;; Add to knowledge base
+      (aichat-opencog-kb-add epidermis)
+      (aichat-opencog-kb-add dermis)
+      (aichat-opencog-kb-add keratinocyte)
+      (aichat-opencog-kb-add melanocyte)
+      (aichat-opencog-kb-add fibroblast)
+      
+      ;; Create relationships
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance epidermis (aichat-symbolic-concept "skin_layer")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance dermis (aichat-symbolic-concept "skin_layer")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance keratinocyte (aichat-symbolic-concept "cell_type")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance melanocyte (aichat-symbolic-concept "cell_type")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance fibroblast (aichat-symbolic-concept "cell_type")))
+      
+      ;; Define locations
+      (let ((location-pred (aichat-symbolic-predicate "has_location")))
+        (aichat-opencog-kb-add location-pred)
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list keratinocyte epidermis)))
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list melanocyte epidermis)))
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list fibroblast dermis)))))
+    
+    ;; Return the KB
+    aichat-opencog-kb))
+#+END_SRC
+
+** SensoryFocus (ECAN)
+:PROPERTIES:
+:STI: 0.860
+:END:
+
+Attention allocation system that prioritizes relevant information in the SkinTwin model.
+prioritizes(active_processes)
+allocates(computational_resources)
+adjusts(based_on_relevance)
+optimizes(processing_efficiency)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-sensory-focus ()
+  "Configure ECAN for SkinTwin's attention allocation."
+  ;; Set custom parameters for skin-specific attention allocation
+  (setq aichat-ecan-decay-rate 0.08)        ; Slower decay for biological processes
+  (setq aichat-ecan-spread-threshold 0.15)  ; Lower threshold for interconnected systems
+  (setq aichat-ecan-max-spread-steps 4)     ; More spreading steps for complex interactions
+  
+  ;; Set up initial attention focus on key concepts
+  (let ((psoriasis (aichat-opencog-kb-get "psoriasis"))
+        (eczema (aichat-opencog-kb-get "eczema"))
+        (keratinocyte (aichat-opencog-kb-get "keratinocyte"))
+        (inflammation (aichat-opencog-kb-get "inflammation")))
+    
+    ;; Stimulate these concepts to increase initial attention
+    (when psoriasis
+      (aichat-ecan-stimulate psoriasis 0.9)
+      (aichat-ecan-set-av psoriasis 
+                          (aichat-ecan-make-av 0.9 0.7 t)))
+    
+    (when eczema
+      (aichat-ecan-stimulate eczema 0.85)
+      (aichat-ecan-set-av eczema
+                          (aichat-ecan-make-av 0.85 0.65 t)))
+    
+    (when keratinocyte
+      (aichat-ecan-stimulate keratinocyte 0.8)
+      (aichat-ecan-set-av keratinocyte
+                          (aichat-ecan-make-av 0.8 0.7 t)))
+    
+    (when inflammation
+      (aichat-ecan-stimulate inflammation 0.9)
+      (aichat-ecan-set-av inflammation
+                          (aichat-ecan-make-av 0.9 0.75 t))))
+  
+  ;; Run initial attention update to spread importance
+  (aichat-ecan-update aichat-opencog-kb))
+#+END_SRC
+
+** DermatoLogic (PLN)
+:PROPERTIES:
+:STI: 0.870
+:END:
+
+Probabilistic reasoning system for deriving logical inferences about skin health and treatments.
+supports(decision_making)
+integrates(diverse_data)
+derives(logical_inferences)
+handles(uncertainty)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-dermato-logic ()
+  "Configure PLN for dermatological reasoning in SkinTwin."
+  
+  ;; Create PLN rules specific to skin conditions
+  (defun skintwin-pln-psoriasis-treatment-rule (condition treatment efficacy)
+    "Rule to infer treatment efficacy for psoriasis-like conditions."
+    (let* ((condition-tv (aichat-symbolic-atom-tv condition))
+           (treatment-tv (aichat-symbolic-atom-tv treatment))
+           (similarity (aichat-pln-inheritance-similarity
+                        condition
+                        (aichat-opencog-kb-get "psoriasis")))
+           (efficacy-tv (aichat-pln-make-tv
+                         (* (aichat-pln-tv-mean efficacy) similarity)
+                         (* (aichat-pln-tv-count efficacy) similarity))))
+      efficacy-tv))
+  
+  ;; Create custom inference types
+  (defun skintwin-infer-treatment-response (patient condition treatment)
+    "Infer how a patient might respond to a treatment for a condition."
+    (let* ((patient-data (aichat-opencog-match-pattern
+                         (aichat-symbolic-atom 'evaluation nil nil nil
+                                              (list patient nil))
+                         aichat-opencog-kb))
+           (genetic-factors (filter-patient-genetic-factors patient-data))
+           (treatment-efficacy (aichat-opencog-kb-get-evaluation
+                               "treatment_efficacy" (list treatment condition)))
+           (modified-efficacy (apply-genetic-modifiers
+                              treatment-efficacy genetic-factors)))
+      modified-efficacy))
+  
+  ;; Run initial PLN reasoning to establish baseline inferences
+  (aichat-pln-reason aichat-opencog-kb))
+
+(defun filter-patient-genetic-factors (patient-data)
+  "Extract genetic factors from patient data."
+  (let ((genetic-factors '()))
+    (dolist (datum patient-data)
+      (when (and (eq (aichat-symbolic-atom-type datum) 'evaluation)
+                 (let ((links (aichat-symbolic-atom-links datum)))
+                   (and (>= (length links) 1)
+                        (string-match-p "genetic_factor" 
+                                       (aichat-symbolic-atom-name (car links))))))
+        (push datum genetic-factors)))
+    genetic-factors))
+
+(defun apply-genetic-modifiers (efficacy genetic-factors)
+  "Modify treatment efficacy based on genetic factors."
+  (let ((base-mean (aichat-pln-tv-mean efficacy))
+        (base-count (aichat-pln-tv-count efficacy))
+        (modifier 1.0))
+    
+    ;; Apply each genetic factor as a modifier
+    (dolist (factor genetic-factors)
+      (let* ((factor-strength (aichat-pln-tv-mean (aichat-symbolic-atom-tv factor)))
+             (factor-name (aichat-symbolic-atom-name 
+                          (cadr (aichat-symbolic-atom-links factor))))
+             (factor-effect (if (string-match-p "resistance" factor-name)
+                               (- 1.0 (* 0.5 factor-strength))
+                             (+ 1.0 (* 0.3 factor-strength)))))
+        (setq modifier (* modifier factor-effect))))
+    
+    ;; Return the modified efficacy truth value
+    (aichat-pln-make-tv (* base-mean modifier) base-count)))
+#+END_SRC
+
+** EpidermiLearn (MOSES)
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+Machine learning system for pattern mining and model building based on skin biology data.
+provides(predictive_analytics)
+discovers(patterns)
+generates(hypotheses)
+adapts_to(new_data)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-epidermi-learn ()
+  "Configure MOSES for pattern mining in SkinTwin."
+  
+  ;; Define program templates for pattern discovery
+  (defun skintwin-create-treatment-program-template ()
+    "Create a program template for treatment efficacy prediction."
+    (aichat-moses-make-program
+     '(if (and (> inflammation_level threshold)
+               (not genetic_resistance))
+          (+ base_efficacy response_modifier)
+        (* base_efficacy 0.5))))
+  
+  ;; Define skin-specific fitness function
+  (defun skintwin-treatment-fitness (program data)
+    "Evaluate fitness of a treatment prediction program."
+    (let ((total-score 0.0)
+          (case-count (length data)))
+      (dolist (case data)
+        (let* ((inputs (car case))
+               (expected (cdr case))
+               (result (aichat-moses-execute program inputs))
+               (diff (abs (- result expected))))
+          (setq total-score (+ total-score (/ 1.0 (1+ diff))))))
+      (/ total-score case-count)))
+  
+  ;; Prepare training data
+  (defun skintwin-prepare-training-data (condition-name)
+    "Prepare training data for a specific skin condition."
+    (let ((condition (aichat-opencog-kb-get condition-name))
+          (training-data '()))
+      ;; Extract relevant data from KB
+      (let ((treatment-data (aichat-opencog-match-pattern
+                            (aichat-symbolic-atom 'evaluation nil nil nil
+                                                 (list (aichat-symbolic-predicate "treats")
+                                                       (list condition nil)))
+                            aichat-opencog-kb)))
+        ;; Transform to MOSES training format
+        (dolist (datum treatment-data)
+          (let* ((links (aichat-symbolic-atom-links datum))
+                 (treatment (cadr (cadr links)))
+                 (efficacy-data (aichat-opencog-kb-get-evaluation
+                                "efficacy" (list treatment condition)))
+                 (inflammation-data (aichat-opencog-kb-get-evaluation
+                                    "causes_inflammation" (list condition)))
+                 (resistance-data (aichat-opencog-kb-get-evaluation
+                                  "genetic_resistance" (list treatment))))
+            
+            (when efficacy-data
+              (push (cons 
+                     (list (cons 'inflammation_level 
+                                (if inflammation-data 
+                                    (aichat-pln-tv-mean (aichat-symbolic-atom-tv inflammation-data))
+                                  0.2))
+                           (cons 'genetic_resistance 
+                                (if resistance-data t nil))
+                           (cons 'base_efficacy 0.7)
+                           (cons 'response_modifier 0.2)
+                           (cons 'threshold 0.5))
+                     (aichat-pln-tv-mean (aichat-symbolic-atom-tv efficacy-data)))
+                    training-data)))))
+      training-data))
+  
+  ;; Initialize MOSES population
+  (aichat-moses-init-population 50 #'skintwin-create-treatment-program-template)
+  
+  ;; Evolve initial model for psoriasis
+  (let ((training-data (skintwin-prepare-training-data "psoriasis")))
+    (when training-data
+      (aichat-moses-evolve 20 training-data 100))))
+#+END_SRC
+
+** RuleDerm (URE)
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+Rule engine for executing logical rules in the SkinTwin knowledge base.
+manages(logical_rules)
+ensures(consistency)
+automates(reasoning_processes)
+enforces(domain_constraints)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-rule-derm ()
+  "Configure URE for skin-specific rule execution."
+  
+  ;; Define key inference rules
+  (defun skintwin-define-inference-rules ()
+    "Define core inference rules for skin biology."
+    
+    ;; Rule 1: If a condition causes inflammation and a treatment reduces inflammation,
+    ;; then the treatment may be effective for the condition
+    (defun inflammation-treatment-rule (condition treatment)
+      (let* ((causes-inflammation (aichat-opencog-kb-get-evaluation
+                                  "causes_inflammation" (list condition)))
+             (reduces-inflammation (aichat-opencog-kb-get-evaluation
+                                   "reduces_inflammation" (list treatment))))
+        (when (and causes-inflammation reduces-inflammation)
+          (let* ((ci-tv (aichat-symbolic-atom-tv causes-inflammation))
+                 (ri-tv (aichat-symbolic-atom-tv reduces-inflammation))
+                 (efficacy-tv (aichat-pln-deduction ci-tv ri-tv)))
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation
+              (aichat-symbolic-predicate "potentially_treats")
+              (list treatment condition)
+              efficacy-tv))))))
+    
+    ;; Rule 2: If a condition affects a cell type and a drug targets that cell type,
+    ;; then the drug may be used for the condition
+    (defun cell-targeting-rule (condition cell-type drug)
+      (let* ((affects-cell (aichat-opencog-kb-get-evaluation
+                           "affects" (list condition cell-type)))
+             (targets-cell (aichat-opencog-kb-get-evaluation
+                           "targets" (list drug cell-type))))
+        (when (and affects-cell targets-cell)
+          (let* ((ac-tv (aichat-symbolic-atom-tv affects-cell))
+                 (tc-tv (aichat-symbolic-atom-tv targets-cell))
+                 (efficacy-tv (aichat-pln-deduction ac-tv tc-tv)))
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation
+              (aichat-symbolic-predicate "may_treat")
+              (list drug condition)
+              efficacy-tv)))))))
+  
+  ;; Register rules with the system
+  (defun skintwin-register-rules ()
+    (skintwin-define-inference-rules)
+    
+    ;; Add rules to the rule engine
+    (let ((conditions '("psoriasis" "eczema" "acne"))
+          (treatments '("corticosteroid" "retinoid" "antibiotic"))
+          (cell-types '("keratinocyte" "melanocyte" "fibroblast")))
+      
+      ;; Apply inflammation rule to all condition-treatment pairs
+      (dolist (condition conditions)
+        (let ((condition-atom (aichat-opencog-kb-get condition)))
+          (when condition-atom
+            (dolist (treatment treatments)
+              (let ((treatment-atom (aichat-opencog-kb-get treatment)))
+                (when treatment-atom
+                  (inflammation-treatment-rule condition-atom treatment-atom)))))))
+      
+      ;; Apply cell-targeting rule to all condition-cell-drug combinations
+      (dolist (condition conditions)
+        (let ((condition-atom (aichat-opencog-kb-get condition)))
+          (when condition-atom
+            (dolist (cell-type cell-types)
+              (let ((cell-atom (aichat-opencog-kb-get cell-type)))
+                (when cell-atom
+                  (dolist (treatment treatments)
+                    (let ((treatment-atom (aichat-opencog-kb-get treatment)))
+                      (when treatment-atom
+                        (cell-targeting-rule condition-atom cell-atom treatment-atom))))))))))))
+  
+  ;; Initialize and run the rule engine
+  (skintwin-register-rules))
+#+END_SRC
+
+* Example Usage
+:PROPERTIES:
+:STI: 0.820
+:LTI: 0.620
+:END:
+
+** Initialize SkinTwin System
+#+BEGIN_SRC elisp
+(defun skintwin-initialize ()
+  "Initialize the SkinTwin system."
+  (interactive)
+  ;; Set up the knowledge base
+  (message "Initializing DermatoGraph (AtomSpace)...")
+  (skintwin-create-dermatograph)
+  
+  ;; Configure the attention system
+  (message "Setting up SensoryFocus (ECAN)...")
+  (skintwin-setup-sensory-focus)
+  
+  ;; Initialize reasoning components
+  (message "Configuring DermatoLogic (PLN)...")
+  (skintwin-setup-dermato-logic)
+  
+  ;; Set up pattern mining
+  (message "Preparing EpidermiLearn (MOSES)...")
+  (skintwin-setup-epidermi-learn)
+  
+  ;; Configure rule engine
+  (message "Initializing RuleDerm (URE)...")
+  (skintwin-setup-rule-derm)
+  
+  (message "SkinTwin system initialized!"))
+#+END_SRC
+
+** Query Disease-Treatment Relationships
+#+BEGIN_SRC elisp
+(defun skintwin-query-treatments (condition-name)
+  "Query possible treatments for a specific skin condition."
+  (interactive "sEnter skin condition: ")
+  (let* ((condition (aichat-opencog-kb-get condition-name))
+         (buffer (get-buffer-create "*SkinTwin-Results*")))
+    
+    (if (null condition)
+        (message "Condition '%s' not found in knowledge base" condition-name)
+      
+      ;; Stimulate the condition to focus attention
+      (aichat-ecan-stimulate condition 0.9)
+      
+      ;; Look for treatment relationships
+      (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+             (potentially-treats-pred (aichat-symbolic-predicate "potentially_treats"))
+             (may-treat-pred (aichat-symbolic-predicate "may_treat"))
+             (direct-treatments (aichat-opencog-match-pattern
+                                (aichat-symbolic-evaluation 
+                                 treats-pred (list nil condition) nil)
+                                aichat-opencog-kb))
+             (potential-treatments (aichat-opencog-match-pattern
+                                   (aichat-symbolic-evaluation 
+                                    potentially-treats-pred (list nil condition) nil)
+                                   aichat-opencog-kb))
+             (possible-treatments (aichat-opencog-match-pattern
+                                  (aichat-symbolic-evaluation 
+                                   may-treat-pred (list nil condition) nil)
+                                  aichat-opencog-kb)))
+        
+        (with-current-buffer buffer
+          (erase-buffer)
+          (org-mode)
+          (insert (format "#+TITLE: Treatments for %s\n\n" condition-name))
+          
+          ;; Display direct treatments
+          (insert "* Established Treatments\n")
+          (if direct-treatments
+              (progn
+                (dolist (treat direct-treatments)
+                  (let* ((links (aichat-symbolic-atom-links treat))
+                         (treatment (car (cdr (car links))))
+                         (treatment-name (aichat-symbolic-atom-name treatment))
+                         (tv (aichat-symbolic-atom-tv treat))
+                         (confidence (aichat-pln-tv-confidence tv)))
+                    (insert (format "** %s\n" treatment-name))
+                    (insert "   :PROPERTIES:\n")
+                    (insert (format "   :CONFIDENCE: %.3f\n" confidence))
+                    (in
+#+END_SRC

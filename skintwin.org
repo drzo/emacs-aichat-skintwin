@@ -1,0 +1,2040 @@
+#+TITLE: SkinTwin: OpenCog-Based Dermatological Model
+#+AUTHOR: AI Chat
+#+DATE: 2025
+#+PROPERTY: header-args :results output :exports both
+
+* Introduction to SkinTwin
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:VLTI: t
+:END:
+
+SkinTwin is a multiscale dermatological model powered by OpenCog's cognitive architecture components. 
+This implementation integrates various OpenCog modules to represent skin biology, environmental factors, 
+and clinical outcomes through a comprehensive knowledge graph and reasoning system.
+
+The project leverages:
+- AtomSpace as DermatoGraph (knowledge representation)
+- ECAN as SensoryFocus (attention allocation)
+- PLN as DermatoLogic (probabilistic reasoning)
+- MOSES as EpidermiLearn (pattern mining and model building)
+- URE as RuleDerm (rule-based reasoning)
+
+** Key Features
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+1. Multi-scale representation of skin biology
+2. Integration of molecular, cellular, and tissue-level data
+3. Predictive analytics for treatment outcomes
+4. Learning from clinical and experimental data
+5. Dynamic attention allocation to relevant information
+
+** Usage
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Enable the minor mode with ~M-x aichat-opencog-org-mode~, then use:
+- ~C-c o v~ to visualize attention flow
+- ~C-c o q~ to query related concepts
+- ~C-c o r~ to apply reasoning
+- ~C-c o k~ to convert headings to knowledge base
+- ~C-c o b~ to convert the entire buffer to the knowledge base
+
+* Skin Biology Knowledge Domain
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:END:
+
+** Epidermis
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.650
+:END:
+
+*** Keratinocyte
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Major cell type in the epidermis, responsible for barrier function.
+has_protein(keratins)
+has_location(epidermis)
+has_function(barrier_formation)
+
+*** Melanocyte
+:PROPERTIES:
+:STI: 0.780
+:END:
+
+Produces melanin pigment that determines skin color and provides UV protection.
+produces(melanin)
+has_location(epidermis_basal_layer)
+connected_to(keratinocyte)
+
+*** Langerhans_Cell
+:PROPERTIES:
+:STI: 0.750
+:END:
+
+Immune cell in the epidermis, acts as antigen-presenting cell.
+has_function(immune_surveillance)
+has_location(epidermis)
+expresses(CD1a)
+
+** Dermis
+:PROPERTIES:
+:STI: 0.830
+:LTI: 0.620
+:END:
+
+*** Fibroblast
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Major cell in the dermis, produces collagen and other extracellular matrix components.
+produces(collagen)
+produces(elastin)
+has_location(dermis)
+
+*** Dermal_Blood_Vessel
+:PROPERTIES:
+:STI: 0.790
+:END:
+
+Supplies nutrients and oxygen to skin cells.
+has_component(endothelial_cells)
+has_function(nutrient_delivery)
+has_function(immune_cell_trafficking)
+
+*** Mast_Cell
+:PROPERTIES:
+:STI: 0.760
+:END:
+
+Immune cell involved in inflammatory and allergic responses.
+contains(histamine_granules)
+has_function(inflammatory_response)
+responds_to(allergens)
+
+** Skin_Appendages
+:PROPERTIES:
+:STI: 0.810
+:LTI: 0.600
+:END:
+
+*** Hair_Follicle
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Structure that produces hair.
+has_component(hair_shaft)
+has_component(hair_bulb)
+contains(stem_cells)
+
+*** Sebaceous_Gland
+:PROPERTIES:
+:STI: 0.780
+:END:
+
+Produces sebum, an oily substance that lubricates the skin.
+produces(sebum)
+connected_to(hair_follicle)
+regulated_by(androgens)
+
+*** Sweat_Gland
+:PROPERTIES:
+:STI: 0.770
+:END:
+
+Produces sweat for thermoregulation.
+has_type(eccrine)
+has_type(apocrine)
+has_function(thermoregulation)
+
+* Molecular Components
+:PROPERTIES:
+:STI: 0.880
+:LTI: 0.680
+:END:
+
+** Structural_Proteins
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Keratin
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Major protein in keratinocytes, provides structural integrity.
+has_type(keratin_1)
+has_type(keratin_5)
+has_type(keratin_14)
+found_in(keratinocyte)
+
+*** Collagen
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+Major protein in dermis, provides tensile strength.
+has_type(collagen_I)
+has_type(collagen_III)
+has_type(collagen_IV)
+produced_by(fibroblast)
+
+*** Elastin
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Provides elasticity to the skin.
+interacts_with(collagen)
+decreases_with(aging)
+produced_by(fibroblast)
+
+** Signaling_Molecules
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+*** Cytokine
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Signaling proteins involved in immune and inflammatory responses.
+has_type(IL-1)
+has_type(TNF-alpha)
+has_type(IL-6)
+regulates(inflammation)
+
+*** Growth_Factor
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Signaling molecules that regulate cell growth and differentiation.
+has_type(EGF)
+has_type(TGF-beta)
+has_type(FGF)
+regulates(cell_proliferation)
+
+*** Hormone
+:PROPERTIES:
+:STI: 0.790
+:END:
+
+Regulates various skin functions.
+has_type(androgens)
+has_type(estrogens)
+has_type(cortisol)
+regulates(sebum_production)
+
+* Skin Conditions
+:PROPERTIES:
+:STI: 0.870
+:LTI: 0.670
+:END:
+
+** Inflammatory_Conditions
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+*** Psoriasis
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Chronic inflammatory condition characterized by rapid keratinocyte proliferation.
+involves(T_cells)
+involves(keratinocyte_hyperproliferation)
+has_symptom(scaly_plaques)
+associated_with(IL-17)
+
+*** Eczema
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Inflammatory condition with impaired skin barrier function.
+involves(barrier_dysfunction)
+involves(immune_dysregulation)
+has_symptom(itching)
+has_symptom(redness)
+
+*** Acne
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Inflammatory condition of hair follicles and sebaceous glands.
+involves(P_acnes_bacteria)
+involves(sebum_overproduction)
+affects(hair_follicle)
+affects(sebaceous_gland)
+
+** Neoplastic_Conditions
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Basal_Cell_Carcinoma
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Common skin cancer arising from basal cells of the epidermis.
+caused_by(UV_radiation)
+affects(basal_cells)
+has_mutation(PTCH1)
+has_symptom(pearly_papule)
+
+*** Squamous_Cell_Carcinoma
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Skin cancer arising from squamous cells of the epidermis.
+caused_by(UV_radiation)
+affects(squamous_cells)
+has_mutation(TP53)
+has_symptom(scaly_patch)
+
+*** Melanoma
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Aggressive skin cancer arising from melanocytes.
+caused_by(UV_radiation)
+affects(melanocyte)
+has_mutation(BRAF)
+has_symptom(atypical_mole)
+
+* Treatments and Interventions
+:PROPERTIES:
+:STI: 0.860
+:LTI: 0.660
+:END:
+
+** Topical_Agents
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+*** Corticosteroid
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Anti-inflammatory agent used for various inflammatory skin conditions.
+treats(eczema)
+treats(psoriasis)
+mechanism(anti_inflammatory)
+side_effect(skin_thinning)
+
+*** Retinoid
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Vitamin A derivatives used for acne and photoaging.
+treats(acne)
+treats(photoaging)
+mechanism(keratinocyte_differentiation)
+side_effect(skin_irritation)
+
+*** Antimicrobial
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Agents that kill or inhibit microorganisms.
+has_type(antibiotics)
+has_type(antifungals)
+has_type(antiseptics)
+treats(infection)
+
+** Systemic_Agents
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+*** Immunosuppressant
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Suppresses immune response in autoimmune skin conditions.
+treats(severe_psoriasis)
+treats(severe_eczema)
+has_type(cyclosporine)
+has_type(methotrexate)
+
+*** Biologic
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Targeted immunomodulatory agents derived from living organisms.
+treats(psoriasis)
+treats(severe_eczema)
+has_type(TNF_inhibitors)
+has_type(IL-17_inhibitors)
+
+*** Antihistamine
+:PROPERTIES:
+:STI: 0.800
+:END:
+
+Blocks histamine receptors to reduce allergic symptoms.
+treats(urticaria)
+treats(itching)
+has_type(H1_antagonists)
+has_type(H2_antagonists)
+
+* Environmental Factors
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.650
+:END:
+
+** UV_Radiation
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+Ultraviolet radiation from the sun or artificial sources.
+has_type(UVA)
+has_type(UVB)
+causes(DNA_damage)
+causes(photoaging)
+
+** Pollution
+:PROPERTIES:
+:STI: 0.820
+:END:
+
+Environmental pollutants that affect skin health.
+has_type(particulate_matter)
+has_type(ozone)
+has_type(nitrogen_dioxide)
+causes(oxidative_stress)
+
+** Climate
+:PROPERTIES:
+:STI: 0.810
+:END:
+
+Environmental conditions that affect skin.
+has_factor(humidity)
+has_factor(temperature)
+has_factor(wind)
+affects(barrier_function)
+
+* SkinTwin Integration Components
+:PROPERTIES:
+:STI: 0.900
+:LTI: 0.700
+:END:
+
+** DermatoGraph (AtomSpace)
+:PROPERTIES:
+:STI: 0.880
+:END:
+
+Central knowledge representation system for skin biology and interactions.
+stores(skin_biology_data)
+stores(environmental_factors)
+stores(clinical_outcomes)
+enables(complex_queries)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-create-dermatograph ()
+  "Create the main knowledge base for SkinTwin using AtomSpace."
+  (let ((kb (make-hash-table :test 'equal)))
+    ;; Initialize core concepts
+    (let ((epidermis (aichat-symbolic-concept "epidermis"))
+          (dermis (aichat-symbolic-concept "dermis"))
+          (keratinocyte (aichat-symbolic-concept "keratinocyte"))
+          (melanocyte (aichat-symbolic-concept "melanocyte"))
+          (fibroblast (aichat-symbolic-concept "fibroblast")))
+      
+      ;; Add to knowledge base
+      (aichat-opencog-kb-add epidermis)
+      (aichat-opencog-kb-add dermis)
+      (aichat-opencog-kb-add keratinocyte)
+      (aichat-opencog-kb-add melanocyte)
+      (aichat-opencog-kb-add fibroblast)
+      
+      ;; Create relationships
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance epidermis (aichat-symbolic-concept "skin_layer")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance dermis (aichat-symbolic-concept "skin_layer")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance keratinocyte (aichat-symbolic-concept "cell_type")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance melanocyte (aichat-symbolic-concept "cell_type")))
+      (aichat-opencog-kb-add (aichat-symbolic-inheritance fibroblast (aichat-symbolic-concept "cell_type")))
+      
+      ;; Define locations
+      (let ((location-pred (aichat-symbolic-predicate "has_location")))
+        (aichat-opencog-kb-add location-pred)
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list keratinocyte epidermis)))
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list melanocyte epidermis)))
+        (aichat-opencog-kb-add (aichat-symbolic-evaluation location-pred (list fibroblast dermis)))))
+    
+    ;; Return the KB
+    aichat-opencog-kb))
+#+END_SRC
+
+** SensoryFocus (ECAN)
+:PROPERTIES:
+:STI: 0.860
+:END:
+
+Attention allocation system that prioritizes relevant information in the SkinTwin model.
+prioritizes(active_processes)
+allocates(computational_resources)
+adjusts(based_on_relevance)
+optimizes(processing_efficiency)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-sensory-focus ()
+  "Configure ECAN for SkinTwin's attention allocation."
+  ;; Set custom parameters for skin-specific attention allocation
+  (setq aichat-ecan-decay-rate 0.08)        ; Slower decay for biological processes
+  (setq aichat-ecan-spread-threshold 0.15)  ; Lower threshold for interconnected systems
+  (setq aichat-ecan-max-spread-steps 4)     ; More spreading steps for complex interactions
+  
+  ;; Set up initial attention focus on key concepts
+  (let ((psoriasis (aichat-opencog-kb-get "psoriasis"))
+        (eczema (aichat-opencog-kb-get "eczema"))
+        (keratinocyte (aichat-opencog-kb-get "keratinocyte"))
+        (inflammation (aichat-opencog-kb-get "inflammation")))
+    
+    ;; Stimulate these concepts to increase initial attention
+    (when psoriasis
+      (aichat-ecan-stimulate psoriasis 0.9)
+      (aichat-ecan-set-av psoriasis 
+                          (aichat-ecan-make-av 0.9 0.7 t)))
+    
+    (when eczema
+      (aichat-ecan-stimulate eczema 0.85)
+      (aichat-ecan-set-av eczema
+                          (aichat-ecan-make-av 0.85 0.65 t)))
+    
+    (when keratinocyte
+      (aichat-ecan-stimulate keratinocyte 0.8)
+      (aichat-ecan-set-av keratinocyte
+                          (aichat-ecan-make-av 0.8 0.7 t)))
+    
+    (when inflammation
+      (aichat-ecan-stimulate inflammation 0.9)
+      (aichat-ecan-set-av inflammation
+                          (aichat-ecan-make-av 0.9 0.75 t))))
+  
+  ;; Run initial attention update to spread importance
+  (aichat-ecan-update aichat-opencog-kb))
+#+END_SRC
+
+** DermatoLogic (PLN)
+:PROPERTIES:
+:STI: 0.870
+:END:
+
+Probabilistic reasoning system for deriving logical inferences about skin health and treatments.
+supports(decision_making)
+integrates(diverse_data)
+derives(logical_inferences)
+handles(uncertainty)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-dermato-logic ()
+  "Configure PLN for dermatological reasoning in SkinTwin."
+  
+  ;; Create PLN rules specific to skin conditions
+  (defun skintwin-pln-psoriasis-treatment-rule (condition treatment efficacy)
+    "Rule to infer treatment efficacy for psoriasis-like conditions."
+    (let* ((condition-tv (aichat-symbolic-atom-tv condition))
+           (treatment-tv (aichat-symbolic-atom-tv treatment))
+           (similarity (aichat-pln-inheritance-similarity
+                        condition
+                        (aichat-opencog-kb-get "psoriasis")))
+           (efficacy-tv (aichat-pln-make-tv
+                         (* (aichat-pln-tv-mean efficacy) similarity)
+                         (* (aichat-pln-tv-count efficacy) similarity))))
+      efficacy-tv))
+  
+  ;; Create custom inference types
+  (defun skintwin-infer-treatment-response (patient condition treatment)
+    "Infer how a patient might respond to a treatment for a condition."
+    (let* ((patient-data (aichat-opencog-match-pattern
+                         (aichat-symbolic-atom 'evaluation nil nil nil
+                                              (list patient nil))
+                         aichat-opencog-kb))
+           (genetic-factors (filter-patient-genetic-factors patient-data))
+           (treatment-efficacy (aichat-opencog-kb-get-evaluation
+                               "treatment_efficacy" (list treatment condition)))
+           (modified-efficacy (apply-genetic-modifiers
+                              treatment-efficacy genetic-factors)))
+      modified-efficacy))
+  
+  ;; Run initial PLN reasoning to establish baseline inferences
+  (aichat-pln-reason aichat-opencog-kb))
+
+(defun filter-patient-genetic-factors (patient-data)
+  "Extract genetic factors from patient data."
+  (let ((genetic-factors '()))
+    (dolist (datum patient-data)
+      (when (and (eq (aichat-symbolic-atom-type datum) 'evaluation)
+                 (let ((links (aichat-symbolic-atom-links datum)))
+                   (and (>= (length links) 1)
+                        (string-match-p "genetic_factor" 
+                                       (aichat-symbolic-atom-name (car links))))))
+        (push datum genetic-factors)))
+    genetic-factors))
+
+(defun apply-genetic-modifiers (efficacy genetic-factors)
+  "Modify treatment efficacy based on genetic factors."
+  (let ((base-mean (aichat-pln-tv-mean efficacy))
+        (base-count (aichat-pln-tv-count efficacy))
+        (modifier 1.0))
+    
+    ;; Apply each genetic factor as a modifier
+    (dolist (factor genetic-factors)
+      (let* ((factor-strength (aichat-pln-tv-mean (aichat-symbolic-atom-tv factor)))
+             (factor-name (aichat-symbolic-atom-name 
+                          (cadr (aichat-symbolic-atom-links factor))))
+             (factor-effect (if (string-match-p "resistance" factor-name)
+                               (- 1.0 (* 0.5 factor-strength))
+                             (+ 1.0 (* 0.3 factor-strength)))))
+        (setq modifier (* modifier factor-effect))))
+    
+    ;; Return the modified efficacy truth value
+    (aichat-pln-make-tv (* base-mean modifier) base-count)))
+#+END_SRC
+
+** EpidermiLearn (MOSES)
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+Machine learning system for pattern mining and model building based on skin biology data.
+provides(predictive_analytics)
+discovers(patterns)
+generates(hypotheses)
+adapts_to(new_data)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-epidermi-learn ()
+  "Configure MOSES for pattern mining in SkinTwin."
+  
+  ;; Define program templates for pattern discovery
+  (defun skintwin-create-treatment-program-template ()
+    "Create a program template for treatment efficacy prediction."
+    (aichat-moses-make-program
+     '(if (and (> inflammation_level threshold)
+               (not genetic_resistance))
+          (+ base_efficacy response_modifier)
+        (* base_efficacy 0.5))))
+  
+  ;; Define skin-specific fitness function
+  (defun skintwin-treatment-fitness (program data)
+    "Evaluate fitness of a treatment prediction program."
+    (let ((total-score 0.0)
+          (case-count (length data)))
+      (dolist (case data)
+        (let* ((inputs (car case))
+               (expected (cdr case))
+               (result (aichat-moses-execute program inputs))
+               (diff (abs (- result expected))))
+          (setq total-score (+ total-score (/ 1.0 (1+ diff))))))
+      (/ total-score case-count)))
+  
+  ;; Prepare training data
+  (defun skintwin-prepare-training-data (condition-name)
+    "Prepare training data for a specific skin condition."
+    (let ((condition (aichat-opencog-kb-get condition-name))
+          (training-data '()))
+      ;; Extract relevant data from KB
+      (let ((treatment-data (aichat-opencog-match-pattern
+                            (aichat-symbolic-atom 'evaluation nil nil nil
+                                                 (list (aichat-symbolic-predicate "treats")
+                                                       (list condition nil)))
+                            aichat-opencog-kb)))
+        ;; Transform to MOSES training format
+        (dolist (datum treatment-data)
+          (let* ((links (aichat-symbolic-atom-links datum))
+                 (treatment (cadr (cadr links)))
+                 (efficacy-data (aichat-opencog-kb-get-evaluation
+                                "efficacy" (list treatment condition)))
+                 (inflammation-data (aichat-opencog-kb-get-evaluation
+                                    "causes_inflammation" (list condition)))
+                 (resistance-data (aichat-opencog-kb-get-evaluation
+                                  "genetic_resistance" (list treatment))))
+            
+            (when efficacy-data
+              (push (cons 
+                     (list (cons 'inflammation_level 
+                                (if inflammation-data 
+                                    (aichat-pln-tv-mean (aichat-symbolic-atom-tv inflammation-data))
+                                  0.2))
+                           (cons 'genetic_resistance 
+                                (if resistance-data t nil))
+                           (cons 'base_efficacy 0.7)
+                           (cons 'response_modifier 0.2)
+                           (cons 'threshold 0.5))
+                     (aichat-pln-tv-mean (aichat-symbolic-atom-tv efficacy-data)))
+                    training-data)))))
+      training-data))
+  
+  ;; Initialize MOSES population
+  (aichat-moses-init-population 50 #'skintwin-create-treatment-program-template)
+  
+  ;; Evolve initial model for psoriasis
+  (let ((training-data (skintwin-prepare-training-data "psoriasis")))
+    (when training-data
+      (aichat-moses-evolve 20 training-data 100))))
+#+END_SRC
+
+** RuleDerm (URE)
+:PROPERTIES:
+:STI: 0.840
+:END:
+
+Rule engine for executing logical rules in the SkinTwin knowledge base.
+manages(logical_rules)
+ensures(consistency)
+automates(reasoning_processes)
+enforces(domain_constraints)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-setup-rule-derm ()
+  "Configure URE for skin-specific rule execution."
+  
+  ;; Define key inference rules
+  (defun skintwin-define-inference-rules ()
+    "Define core inference rules for skin biology."
+    
+    ;; Rule 1: If a condition causes inflammation and a treatment reduces inflammation,
+    ;; then the treatment may be effective for the condition
+    (defun inflammation-treatment-rule (condition treatment)
+      (let* ((causes-inflammation (aichat-opencog-kb-get-evaluation
+                                  "causes_inflammation" (list condition)))
+             (reduces-inflammation (aichat-opencog-kb-get-evaluation
+                                   "reduces_inflammation" (list treatment))))
+        (when (and causes-inflammation reduces-inflammation)
+          (let* ((ci-tv (aichat-symbolic-atom-tv causes-inflammation))
+                 (ri-tv (aichat-symbolic-atom-tv reduces-inflammation))
+                 (efficacy-tv (aichat-pln-deduction ci-tv ri-tv)))
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation
+              (aichat-symbolic-predicate "potentially_treats")
+              (list treatment condition)
+              efficacy-tv))))))
+    
+    ;; Rule 2: If a condition affects a cell type and a drug targets that cell type,
+    ;; then the drug may be used for the condition
+    (defun cell-targeting-rule (condition cell-type drug)
+      (let* ((affects-cell (aichat-opencog-kb-get-evaluation
+                           "affects" (list condition cell-type)))
+             (targets-cell (aichat-opencog-kb-get-evaluation
+                           "targets" (list drug cell-type))))
+        (when (and affects-cell targets-cell)
+          (let* ((ac-tv (aichat-symbolic-atom-tv affects-cell))
+                 (tc-tv (aichat-symbolic-atom-tv targets-cell))
+                 (efficacy-tv (aichat-pln-deduction ac-tv tc-tv)))
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation
+              (aichat-symbolic-predicate "may_treat")
+              (list drug condition)
+              efficacy-tv)))))))
+  
+  ;; Register rules with the system
+  (defun skintwin-register-rules ()
+    (skintwin-define-inference-rules)
+    
+    ;; Add rules to the rule engine
+    (let ((conditions '("psoriasis" "eczema" "acne"))
+          (treatments '("corticosteroid" "retinoid" "antibiotic"))
+          (cell-types '("keratinocyte" "melanocyte" "fibroblast")))
+      
+      ;; Apply inflammation rule to all condition-treatment pairs
+      (dolist (condition conditions)
+        (let ((condition-atom (aichat-opencog-kb-get condition)))
+          (when condition-atom
+            (dolist (treatment treatments)
+              (let ((treatment-atom (aichat-opencog-kb-get treatment)))
+                (when treatment-atom
+                  (inflammation-treatment-rule condition-atom treatment-atom)))))))
+      
+      ;; Apply cell-targeting rule to all condition-cell-drug combinations
+      (dolist (condition conditions)
+        (let ((condition-atom (aichat-opencog-kb-get condition)))
+          (when condition-atom
+            (dolist (cell-type cell-types)
+              (let ((cell-atom (aichat-opencog-kb-get cell-type)))
+                (when cell-atom
+                  (dolist (treatment treatments)
+                    (let ((treatment-atom (aichat-opencog-kb-get treatment)))
+                      (when treatment-atom
+                        (cell-targeting-rule condition-atom cell-atom treatment-atom))))))))))))
+  
+  ;; Initialize and run the rule engine
+  (skintwin-register-rules))
+#+END_SRC
+
+* Example Usage
+:PROPERTIES:
+:STI: 0.820
+:LTI: 0.620
+:END:
+
+** Initialize SkinTwin System
+#+BEGIN_SRC elisp
+(defun skintwin-initialize ()
+  "Initialize the SkinTwin system."
+  (interactive)
+  ;; Set up the knowledge base
+  (message "Initializing DermatoGraph (AtomSpace)...")
+  (skintwin-create-dermatograph)
+  
+  ;; Configure the attention system
+  (message "Setting up SensoryFocus (ECAN)...")
+  (skintwin-setup-sensory-focus)
+  
+  ;; Initialize reasoning components
+  (message "Configuring DermatoLogic (PLN)...")
+  (skintwin-setup-dermato-logic)
+  
+  ;; Set up pattern mining
+  (message "Preparing EpidermiLearn (MOSES)...")
+  (skintwin-setup-epidermi-learn)
+  
+  ;; Configure rule engine
+  (message "Initializing RuleDerm (URE)...")
+  (skintwin-setup-rule-derm)
+  
+  (message "SkinTwin system initialized!"))
+#+END_SRC
+
+** Query Disease-Treatment Relationships
+#+BEGIN_SRC elisp
+(defun skintwin-query-treatments (condition-name)
+  "Query possible treatments for a specific skin condition."
+  (interactive "sEnter skin condition: ")
+  (let* ((condition (aichat-opencog-kb-get condition-name))
+         (buffer (get-buffer-create "*SkinTwin-Results*")))
+    
+    (if (null condition)
+        (message "Condition '%s' not found in knowledge base" condition-name)
+      
+      ;; Stimulate the condition to focus attention
+      (aichat-ecan-stimulate condition 0.9)
+      
+      ;; Look for treatment relationships
+      (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+             (potentially-treats-pred (aichat-symbolic-predicate "potentially_treats"))
+             (may-treat-pred (aichat-symbolic-predicate "may_treat"))
+             (direct-treatments (aichat-opencog-match-pattern
+                                (aichat-symbolic-evaluation 
+                                 treats-pred (list nil condition) nil)
+                                aichat-opencog-kb))
+             (potential-treatments (aichat-opencog-match-pattern
+                                   (aichat-symbolic-evaluation 
+                                    potentially-treats-pred (list nil condition) nil)
+                                   aichat-opencog-kb))
+             (possible-treatments (aichat-opencog-match-pattern
+                                  (aichat-symbolic-evaluation 
+                                   may-treat-pred (list nil condition) nil)
+                                  aichat-opencog-kb)))
+        
+        (with-current-buffer buffer
+          (erase-buffer)
+          (org-mode)
+          (insert (format "#+TITLE: Treatments for %s\n\n" condition-name))
+          
+          ;; Display direct treatments
+          (insert "* Established Treatments\n")
+          (if direct-treatments
+              (progn
+                (dolist (treat direct-treatments)
+                  (let* ((links (aichat-symbolic-atom-links treat))
+                         (treatment (car (cdr (car links))))
+                         (treatment-name (aichat-symbolic-atom-name treatment))
+                         (tv (aichat-symbolic-atom-tv treat))
+                         (confidence (aichat-pln-tv-confidence tv)))
+                    (insert (format "** %s\n" treatment-name))
+                    (insert "   :PROPERTIES:\n")
+                    (insert (format "   :CONFIDENCE: %.3f\n" confidence))
+                    (insert "   :END:\n")
+                    (insert (format "   Established treatment with %.1f%% confidence.\n" 
+                                   (* 100 confidence))))))
+            (insert "No established treatments found.\n"))
+          
+          ;; Display potential treatments
+          (insert "\n* Potential Treatments\n")
+          (if potential-treatments
+              (progn
+                (dolist (treat potential-treatments)
+                  (let* ((links (aichat-symbolic-atom-links treat))
+                         (treatment (car (cdr (car links))))
+                         (treatment-name (aichat-symbolic-atom-name treatment))
+                         (tv (aichat-symbolic-atom-tv treat))
+                         (confidence (aichat-pln-tv-confidence tv)))
+                    (insert (format "** %s\n" treatment-name))
+                    (insert "   :PROPERTIES:\n")
+                    (insert (format "   :CONFIDENCE: %.3f\n" confidence))
+                    (insert "   :END:\n")
+                    (insert (format "   Potentially effective based on inflammatory pathway (%.1f%% confidence).\n" 
+                                   (* 100 confidence))))))
+            (insert "No potential treatments found.\n"))
+          
+          ;; Display possible treatments
+          (insert "\n* Experimental Approaches\n")
+          (if possible-treatments
+              (progn
+                (dolist (treat possible-treatments)
+                  (let* ((links (aichat-symbolic-atom-links treat))
+                         (treatment (car (cdr (car links))))
+                         (treatment-name (aichat-symbolic-atom-name treatment))
+                         (tv (aichat-symbolic-atom-tv treat))
+                         (confidence (aichat-pln-tv-confidence tv)))
+                    (insert (format "** %s\n" treatment-name))
+                    (insert "   :PROPERTIES:\n")
+                    (insert (format "   :CONFIDENCE: %.3f\n" confidence))
+                    (insert "   :END:\n")
+                    (insert (format "   Experimental approach based on cellular targets (%.1f%% confidence).\n" 
+                                   (* 100 confidence))))))
+            (insert "No experimental approaches found.\n"))
+          
+          (insert "\n* Reasoning Process\n")
+          (insert "The system used the following reasoning steps to identify treatments:\n\n")
+          (insert "1. Direct knowledge from the knowledge base\n")
+          (insert "2. Inference based on inflammatory pathways\n")
+          (insert "3. Reasoning about cellular targets\n")
+          (insert "4. Consideration of genetic factors\n\n")
+          
+          (insert "** Attention Distribution\n")
+          (insert "   The following concepts received the most attention during reasoning:\n\n")
+          (let ((attention-values '()))
+            (maphash (lambda (k v)
+                       (when (aichat-ecan-get-av v)
+                         (push (cons v (aichat-ecan-av-sti (aichat-ecan-get-av v))) 
+                               attention-values)))
+                     aichat-opencog-kb)
+            (setq attention-values 
+                  (sort attention-values
+                        (lambda (a b) (> (cdr a) (cdr b)))))
+            (let ((top-values (seq-take attention-values 5)))
+              (dolist (pair top-values)
+                (let* ((atom (car pair))
+                       (sti (cdr pair))
+                       (name (aichat-symbolic-atom-name atom)))
+                  (insert (format "   - %s: %.2f\n" name sti)))))))
+        
+        (display-buffer buffer)))))
+#+END_SRC
+
+** Visualize Knowledge Graph
+#+BEGIN_SRC elisp
+(defun skintwin-visualize-graph ()
+  "Visualize the SkinTwin knowledge graph using Org-mode."
+  (interactive)
+  (let ((buffer (get-buffer-create "*SkinTwin-Graph*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (org-mode)
+      (insert "#+TITLE: SkinTwin Knowledge Graph Visualization\n\n")
+      
+      ;; Create a hierarchical view of the knowledge
+      (insert "* Skin Biology Hierarchy\n")
+      
+      ;; Function to display inheritance hierarchies
+      (let ((displayed-atoms (make-hash-table :test 'equal)))
+        (defun display-hierarchy (concept level)
+          (when (and concept 
+                     (not (gethash (aichat-symbolic-atom-name concept) displayed-atoms)))
+            ;; Mark as displayed to prevent cycles
+            (puthash (aichat-symbolic-atom-name concept) t displayed-atoms)
+            
+            ;; Display this concept
+            (let ((indent (make-string (* level 2) ? ))
+                  (av (aichat-ecan-get-av concept))
+                  (name (aichat-symbolic-atom-name concept)))
+              
+              (insert (format "%s- %s" indent name))
+              
+              ;; Add attention indicator if available
+              (when av
+                (let ((sti (aichat-ecan-av-sti av)))
+                  (insert (format " [%.2f]" sti))))
+              
+              (insert "\n")
+              
+              ;; Find and display children
+              (let* ((pattern (aichat-symbolic-atom 'inheritance 
+                                                   concept nil nil))
+                     (matches (aichat-opencog-match-pattern pattern aichat-opencog-kb)))
+                (dolist (match matches)
+                  (let* ((links (aichat-symbolic-atom-links match))
+                         (child (cadr links)))
+                    (display-hierarchy child (1+ level))))))))
+        
+        ;; Start with the highest level concepts
+        (let ((top-concepts '("skin_layer" "cell_type" "skin_condition")))
+          (dolist (concept-name top-concepts)
+            (let ((concept (aichat-opencog-kb-get concept-name)))
+              (when concept
+                (insert (format "** %s Tree\n" concept-name))
+                (display-hierarchy concept 1))))))
+      
+      ;; Create relationship visualization
+      (insert "\n* Key Relationships\n")
+      
+      ;; Function to display predicates and their uses
+      (let ((predicates (make-hash-table :test 'equal)))
+        
+        ;; Collect all predicates
+        (maphash (lambda (k v)
+                   (when (eq (aichat-symbolic-atom-type v) 'predicate)
+                     (puthash k v predicates)))
+                 aichat-opencog-kb)
+        
+        ;; Display each predicate and its uses
+        (maphash (lambda (k v)
+                   (let* ((pred-name (aichat-symbolic-atom-name v))
+                          (pattern (aichat-symbolic-atom 'evaluation v nil nil nil))
+                          (uses (aichat-opencog-match-pattern pattern aichat-opencog-kb)))
+                     
+                     (when uses
+                       (insert (format "** %s Relationships\n" pred-name))
+                       (dolist (use uses)
+                         (let* ((links (aichat-symbolic-atom-links use))
+                                (args (cdr links)))
+                           (insert "   - ")
+                           (if (= (length args) 1)
+                               ;; Unary predicate
+                               (insert (format "%s(%s)\n" 
+                                              pred-name
+                                              (aichat-symbolic-atom-name (car args))))
+                             ;; Binary predicate
+                             (insert (format "%s(%s, %s)\n" 
+                                            pred-name
+                                            (aichat-symbolic-atom-name (car args))
+                                            (aichat-symbolic-atom-name (cadr args))))))))))
+                 predicates))
+      
+      ;; Add a visualization of attention distribution
+      (insert "\n* Attention Distribution\n")
+      (insert "The following concepts currently have the highest attention values:\n\n")
+      
+      (let ((attention-values '()))
+        (maphash (lambda (k v)
+                   (when (aichat-ecan-get-av v)
+                     (push (cons v (aichat-ecan-av-sti (aichat-ecan-get-av v))) 
+                           attention-values)))
+                 aichat-opencog-kb)
+        (setq attention-values 
+              (sort attention-values
+                    (lambda (a b) (> (cdr a) (cdr b)))))
+        (let ((top-values (seq-take attention-values 10)))
+          (insert "| Concept | Attention | Bar |\n")
+          (insert "|---------|-----------|-----|\n")
+          (dolist (pair top-values)
+            (let* ((atom (car pair))
+                   (sti (cdr pair))
+                   (name (aichat-symbolic-atom-name atom))
+                   (bar-length (floor (* sti 20))))
+              (insert (format "| %s | %.2f | %s |\n" 
+                             name 
+                             sti 
+                             (make-string bar-length ?█)))))))
+      
+      ;; Add some PLN inferences
+      (insert "\n* Recent PLN Inferences\n")
+      (insert "Recent inferences made by the Probabilistic Logic Networks reasoning system:\n\n")
+      
+      (let ((inferences '()))
+        ;; Find all potentially_treats relationships as they're likely inferred
+        (let* ((pred (aichat-symbolic-predicate "potentially_treats"))
+               (pattern (aichat-symbolic-atom 'evaluation pred nil nil nil))
+               (matches (aichat-opencog-match-pattern pattern aichat-opencog-kb)))
+          (setq inferences matches))
+        
+        (if inferences
+            (progn
+              (insert "| Relationship | Confidence | Basis |\n")
+              (insert "|--------------|------------|-------|\n")
+              (dolist (inf inferences)
+                (let* ((links (aichat-symbolic-atom-links inf))
+                       (args (cdr links))
+                       (treatment (car args))
+                       (condition (cadr args))
+                       (treatment-name (aichat-symbolic-atom-name treatment))
+                       (condition-name (aichat-symbolic-atom-name condition))
+                       (tv (aichat-symbolic-atom-tv inf))
+                       (confidence (aichat-pln-tv-confidence tv)))
+                  (insert (format "| %s potentially treats %s | %.2f | Inflammatory pathway |\n"
+                                 treatment-name condition-name confidence)))))
+          (insert "No recent inferences found.\n"))))
+    
+    (display-buffer buffer)))
+#+END_SRC
+
+** Patient Analysis Functions
+#+BEGIN_SRC elisp
+(defun skintwin-add-patient (patient-id &optional properties)
+  "Add a patient to the knowledge base with PATIENT-ID and optional PROPERTIES."
+  (interactive "sPatient ID: ")
+  (let ((patient (aichat-symbolic-concept patient-id)))
+    ;; Add patient to KB
+    (aichat-opencog-kb-add patient)
+    
+    ;; Add properties if provided
+    (when properties
+      (dolist (prop properties)
+        (let ((pred-name (car prop))
+              (value (cdr prop)))
+          (let ((pred (aichat-symbolic-predicate pred-name))
+                (val-atom (if (numberp value)
+                             value
+                           (aichat-symbolic-concept (format "%s" value)))))
+            (aichat-opencog-kb-add pred)
+            (when (not (numberp value))
+              (aichat-opencog-kb-add val-atom))
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation pred (list patient val-atom)))))))
+    
+    (message "Patient %s added to knowledge base" patient-id)
+    patient))
+
+(defun skintwin-add-patient-condition (patient-id condition-name &optional severity confidence)
+  "Associate CONDITION-NAME with PATIENT-ID with optional SEVERITY and CONFIDENCE."
+  (interactive "sPatient ID: \nsCondition name: ")
+  (let ((patient (aichat-opencog-kb-get patient-id))
+        (condition (aichat-opencog-kb-get condition-name)))
+    
+    (if (and patient condition)
+        (let* ((has-condition (aichat-symbolic-predicate "has_condition"))
+               (severity (or severity 0.5))
+               (confidence (or confidence 0.9))
+               (tv (aichat-pln-make-tv severity confidence)))
+          
+          ;; Add the condition relationship
+          (aichat-opencog-kb-add
+           (aichat-symbolic-evaluation has-condition (list patient condition) tv))
+          
+          (message "Added condition %s to patient %s (severity: %.1f)" 
+                  condition-name patient-id severity))
+      
+      (message "Patient or condition not found in knowledge base"))))
+
+(defun skintwin-analyze-patient (patient-id)
+  "Perform a comprehensive analysis of the patient with PATIENT-ID."
+  (interactive "sPatient ID: ")
+  (let* ((patient (aichat-opencog-kb-get patient-id))
+         (buffer (get-buffer-create "*SkinTwin-Patient-Analysis*")))
+    
+    (if (null patient)
+        (message "Patient '%s' not found in knowledge base" patient-id)
+      
+      ;; Stimulate the patient to focus attention
+      (aichat-ecan-stimulate patient 0.9)
+      
+      (with-current-buffer buffer
+        (erase-buffer)
+        (org-mode)
+        (insert (format "#+TITLE: Analysis of Patient %s\n\n" patient-id))
+        
+        ;; Get patient conditions
+        (let* ((has-condition (aichat-symbolic-predicate "has_condition"))
+               (condition-pattern (aichat-symbolic-evaluation 
+                                  has-condition (list patient nil) nil))
+               (conditions (aichat-opencog-match-pattern 
+                           condition-pattern aichat-opencog-kb)))
+          
+          ;; Patient conditions section
+          (insert "* Skin Conditions\n")
+          (if conditions
+              (dolist (condition-rel conditions)
+                (let* ((links (aichat-symbolic-atom-links condition-rel))
+                       (condition (cadr links))
+                       (condition-name (aichat-symbolic-atom-name condition))
+                       (tv (aichat-symbolic-atom-tv condition-rel))
+                       (severity (aichat-pln-tv-mean tv))
+                       (confidence (aichat-pln-tv-confidence tv)))
+                  
+                  (insert (format "** %s\n" condition-name))
+                  (insert "   :PROPERTIES:\n")
+                  (insert (format "   :SEVERITY: %.2f\n" severity))
+                  (insert (format "   :CONFIDENCE: %.2f\n" confidence))
+                  (insert "   :END:\n")
+                  
+                  ;; Add severity description
+                  (cond
+                   ((> severity 0.8)
+                    (insert "   *Severe case* requiring immediate intervention.\n"))
+                   ((> severity 0.5)
+                    (insert "   *Moderate case* requiring active treatment.\n"))
+                   (t
+                    (insert "   *Mild case* that may respond to conservative treatment.\n")))
+                  
+                  ;; Add recommended treatments based on condition
+                  (insert "\n*** Recommended Treatments\n")
+                  (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+                         (treatment-pattern (aichat-symbolic-evaluation 
+                                            treats-pred (list nil condition) nil))
+                         (treatments (aichat-opencog-match-pattern 
+                                     treatment-pattern aichat-opencog-kb)))
+                    
+                    (if treatments
+                        (progn
+                          (insert "    Standard treatments:\n")
+                          (dolist (treatment-rel treatments)
+                            (let* ((treat-links (aichat-symbolic-atom-links treatment-rel))
+                                   (treatment (car (cdr (car treat-links))))
+                                   (treatment-name (aichat-symbolic-atom-name treatment)))
+                              (insert (format "    - %s\n" treatment-name)))))
+                      
+                      ;; No direct treatments, try inferred treatments
+                      (let* ((potential-pred (aichat-symbolic-predicate "potentially_treats"))
+                             (potential-pattern (aichat-symbolic-evaluation 
+                                                potential-pred (list nil condition) nil))
+                             (potential-treatments (aichat-opencog-match-pattern 
+                                                   potential-pattern aichat-opencog-kb)))
+                        
+                        (if potential-treatments
+                            (progn
+                              (insert "    Suggested treatments (based on inference):\n")
+                              (dolist (pot-rel potential-treatments)
+                                (let* ((pot-links (aichat-symbolic-atom-links pot-rel))
+                                       (treatment (car (cdr (car pot-links))))
+                                       (treatment-name (aichat-symbolic-atom-name treatment))
+                                       (tv (aichat-symbolic-atom-tv pot-rel))
+                                       (conf (aichat-pln-tv-confidence tv)))
+                                  (insert (format "    - %s (confidence: %.2f)\n" 
+                                                 treatment-name conf)))))
+                          (insert "    No established treatments found for this condition.\n"))))))))
+            
+            (insert "No skin conditions recorded for this patient.\n"))
+          
+          ;; Patient properties section
+          (insert "\n* Patient Properties\n")
+          (let ((properties '()))
+            (maphash (lambda (k v)
+                       (when (and (eq (aichat-symbolic-atom-type v) 'evaluation)
+                                 (let ((links (aichat-symbolic-atom-links v)))
+                                   (and (>= (length links) 2)
+                                        (equal (aichat-symbolic-atom-name (car links)) patient-id))))
+                         (push v properties)))
+                     aichat-opencog-kb)
+            
+            (if properties
+                (dolist (prop properties)
+                  (let* ((links (aichat-symbolic-atom-links prop))
+                         (pred (car links))
+                         (pred-name (aichat-symbolic-atom-name pred))
+                         (value (cadr links))
+                         (value-str (if (aichat-symbolic-atom-p value)
+                                       (aichat-symbolic-atom-name value)
+                                     (format "%s" value))))
+                    (insert (format "- %s: %s\n" pred-name value-str))))
+              (insert "No specific properties recorded for this patient.\n")))
+          
+          ;; Add predicted treatment responses
+          (insert "\n* Predicted Treatment Responses\n")
+          
+          ;; Apply MOSES prediction for treatment responses
+          (when (fboundp 'aichat-moses-evolve)
+            (let ((programs aichat-moses-population))
+              (if programs
+                  (let ((top-program (car programs)))
+                    (insert "Based on evolved prediction model:\n\n")
+                    (insert "| Treatment | Predicted Efficacy | Confidence |\n")
+                    (insert "|-----------|--------------------|-----------|\n")
+                    
+                    ;; Get all treatments
+                    (let ((all-treatments '()))
+                      (maphash (lambda (k v)
+                                 (when (equal (aichat-symbolic-atom-name v) "treats")
+                                   (let ((links (aichat-symbolic-atom-links v)))
+                                     (when links
+                                       (push (car links) all-treatments)))))
+                               aichat-opencog-kb)
+                      
+                      ;; Predict response for each treatment
+                      (dolist (treatment all-treatments)
+                        (let* ((treatment-name (aichat-symbolic-atom-name treatment))
+                               ;; Prepare input for MOSES program
+                               (inputs (list (cons 'genetic_resistance nil)
+                                           (cons 'inflammation_level 0.6)
+                                           (cons 'base_efficacy 0.7)
+                                           (cons 'response_modifier 0.2)
+                                           (cons 'threshold 0.5)))
+                               ;; Execute prediction
+                               (efficacy (aichat-moses-execute top-program inputs))
+                               ;; Confidence decreases with severity
+                               (confidence (- 0.9 (* 0.3 (or severity 0.5)))))
+                          (when efficacy
+                            (insert (format "| %s | %.2f | %.2f |\n" 
+                                           treatment-name efficacy confidence)))))))
+                
+                (insert "No prediction models have been evolved yet.\n"))))
+          
+          ;; Add reasoning based on attention
+          (insert "\n* Reasoning Process\n")
+          (insert "The system focused attention on the following concepts during analysis:\n\n")
+          (let ((attention-values '()))
+            (maphash (lambda (k v)
+                       (when (aichat-ecan-get-av v)
+                         (push (cons v (aichat-ecan-av-sti (aichat-ecan-get-av v))) 
+                               attention-values)))
+                     aichat-opencog-kb)
+            (setq attention-values 
+                  (sort attention-values
+                        (lambda (a b) (> (cdr a) (cdr b)))))
+            (let ((top-values (seq-take attention-values 5)))
+              (dolist (pair top-values)
+                (let* ((atom (car pair))
+                       (sti (cdr pair))
+                       (name (aichat-symbolic-atom-name atom)))
+                  (insert (format "- %s: %.2f\n" name sti))))))))
+      
+      (display-buffer buffer))))
+#+END_SRC
+
+* Integration with Echo State Networks
+:PROPERTIES:
+:STI: 0.880
+:LTI: 0.670
+:END:
+
+** ESN for Skin Disease Progression
+:PROPERTIES:
+:STI: 0.850
+:END:
+
+Using Echo State Networks to predict disease progression based on treatment response and environmental factors.
+predicts(treatment_responses)
+models(disease_progression)
+analyzes(time_series_data)
+adapts_to(patient_patterns)
+
+*** Implementation
+
+#+BEGIN_SRC elisp
+(defun skintwin-setup-esn-prediction ()
+  "Configure Echo State Networks for SkinTwin's predictive capabilities."
+  ;; Create ESN state
+  (let ((state (aichat-esn-make-state)))
+    
+    ;; Configure reservoir parameters for skin conditions
+    (setq aichat-esn-reservoir-size 200)        ; Larger reservoir for complex patterns
+    (setq aichat-esn-connectivity 0.15)         ; More connections for robust prediction
+    (setq aichat-esn-spectral-radius 0.85)      ; Slightly lower radius for stability
+    
+    ;; Generate training data from knowledge base
+    (let ((training-inputs '())
+          (training-outputs '()))
+      
+      ;; Use existing treatments and conditions to create training examples
+      (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+             (treats-pattern (aichat-symbolic-evaluation treats-pred nil nil nil))
+             (treats-relations (aichat-opencog-match-pattern treats-pattern aichat-opencog-kb)))
+        
+        (dolist (relation treats-relations)
+          (let* ((links (aichat-symbolic-atom-links relation))
+                 (args (cdr links))
+                 (treatment (car args))
+                 (condition (cadr args))
+                 (treatment-av (aichat-ecan-get-av treatment))
+                 (condition-av (aichat-ecan-get-av condition))
+                 (treatment-sti (if treatment-av (aichat-ecan-av-sti treatment-av) 0.5))
+                 (condition-sti (if condition-av (aichat-ecan-av-sti condition-av) 0.5))
+                 ;; Create numeric representation
+                 (input (+ (* 0.7 treatment-sti) (* 0.3 condition-sti)))
+                 ;; Output represents improvement over time
+                 (output (min 0.9 (+ 0.4 (* 0.3 treatment-sti)))))
+            
+            (push input training-inputs)
+            (push output training-outputs))))
+      
+      ;; Train the ESN on the data if available
+      (when (and training-inputs training-outputs)
+        (aichat-esn-train state 
+                         (nreverse training-inputs)
+                         (nreverse training-outputs)
+                         0.05))))
+  
+  ;; Return success message
+  (message "Echo State Network prediction system configured"))
+
+(defun skintwin-predict-progression (condition-name treatment-name time-steps)
+  "Predict the progression of CONDITION-NAME when treated with TREATMENT-NAME over TIME-STEPS."
+  (interactive "sCondition name: \nsTreatment name: \nnNumber of time steps: ")
+  (let* ((condition (aichat-opencog-kb-get condition-name))
+         (treatment (aichat-opencog-kb-get treatment-name))
+         (buffer (get-buffer-create "*SkinTwin-Progression*"))
+         (state (aichat-esn-make-state)))
+    
+    (if (or (null condition) (null treatment))
+        (message "Condition or treatment not found in knowledge base")
+      
+      ;; Stimulate condition and treatment to focus attention
+      (aichat-ecan-stimulate condition 0.8)
+      (aichat-ecan-stimulate treatment 0.8)
+      
+      ;; Get the truth values and attention values
+      (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+             (treats-rel (aichat-opencog-kb-get-evaluation treats-pred (list treatment condition)))
+             (efficacy (if treats-rel 
+                          (aichat-pln-tv-mean (aichat-symbolic-atom-tv treats-rel))
+                        0.5))
+             (condition-av (aichat-ecan-get-av condition))
+             (condition-sti (if condition-av (aichat-ecan-av-sti condition-av) 0.5))
+             ;; Initial severity represents the initial condition state
+             (initial-severity condition-sti)
+             ;; Progression will store the time series of severity values
+             (progression (list initial-severity)))
+        
+        ;; Generate the progression time series using ESN
+        (let ((current-value initial-severity))
+          (dotimes (i time-steps)
+            ;; Update the state with current value and predicted improvement
+            (let* ((input (+ (* 0.7 efficacy) (* 0.3 current-value)))
+                   (improvement (aichat-esn-update state input))
+                   ;; New value decreases by the improvement, but never becomes negative
+                   (new-value (max 0.0 (- current-value (* improvement 0.1)))))
+              
+              ;; Add to progression and update current value
+              (push new-value progression)
+              (setq current-value new-value))))
+        
+        ;; Reverse progression to get chronological order
+        (setq progression (nreverse progression))
+        
+        ;; Display the results
+        (with-current-buffer buffer
+          (erase-buffer)
+          (org-mode)
+          (insert (format "#+TITLE: Predicted Progression of %s with %s Treatment\n\n" 
+                         condition-name treatment-name))
+          
+          ;; Display the prediction summary
+          (insert "* Prediction Summary\n")
+          (insert (format "- Condition: %s\n" condition-name))
+          (insert (format "- Treatment: %s\n" treatment-name))
+          (insert (format "- Initial Severity: %.2f\n" initial-severity))
+          (insert (format "- Treatment Efficacy: %.2f\n" efficacy))
+          (insert (format "- Predicted Outcome (after %d steps): %.2f\n" 
+                         time-steps (car (last progression))))
+          
+          (if (< (car (last progression)) (* 0.5 initial-severity))
+              (insert "- Prediction: *Significant improvement expected*\n")
+            (if (< (car (last progression)) (* 0.8 initial-severity))
+                (insert "- Prediction: *Moderate improvement expected*\n")
+              (insert "- Prediction: *Limited improvement expected*\n")))
+          
+          ;; Display the progression data
+          (insert "\n* Progression Data\n")
+          (insert "| Time Step | Severity | Visual |\n")
+          (insert "|-----------|----------|--------|\n")
+          
+          (let ((step 0))
+            (dolist (severity progression)
+              (let ((bar-length (floor (* severity 20))))
+                (insert (format "| %d | %.2f | %s |\n" 
+                               step severity (make-string bar-length ?█))))
+              (setq step (1+ step))))
+          
+          ;; Add a plot representation (text-based)
+          (insert "\n* Visual Representation\n")
+          (insert "```\nSeverity\n^\n|")
+          
+          ;; Y-axis (severity)
+          (dotimes (i 10)
+            (insert "\n|")
+            (let ((severity-level (- 1.0 (* i 0.1))))
+              ;; Add a horizontal line every 0.2
+              (if (= (mod i 2) 0)
+                  (insert (format " %.1f -" severity-level))
+                (insert "     |"))
+              
+              ;; Plot points
+              (let ((step 0))
+                (dolist (severity progression)
+                  (when (>= severity (- severity-level 0.05))
+                    (insert (make-string (- step (length (buffer-substring-no-properties 
+                                                         (line-beginning-position)
+                                                         (point))))
+                                        ? ))
+                    (insert "*"))
+                  (setq step (+ step 2))))))
+          
+          ;; X-axis (time)
+          (insert "\n|_")
+          (dotimes (i (length progression))
+            (insert "__"))
+          (insert "___> Time\n```\n")
+          
+          ;; Add ESN details
+          (insert "\n* Echo State Network Parameters\n")
+          (insert (format "- Reservoir Size: %d\n" aichat-esn-reservoir-size))
+          (insert (format "- Connectivity: %.2f\n" aichat-esn-connectivity))
+          (insert (format "- Spectral Radius: %.2f\n" aichat-esn-spectral-radius)))
+        
+        (display-buffer buffer)))))
+#+END_SRC
+
+* Interactive Dashboard for SkinTwin
+:PROPERTIES:
+:STI: 0.890
+:LTI: 0.680
+:END:
+
+** Dashboard Implementation
+:PROPERTIES:
+:STI: 0.870
+:END:
+
+Interactive dashboard for exploring and interacting with the SkinTwin system.
+provides(unified_interface)
+enables(interactive_exploration)
+visualizes(knowledge_graph)
+facilitates(treatment_planning)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-dashboard ()
+  "Display an interactive dashboard for the SkinTwin system."
+  (interactive)
+  (let ((buffer (get-buffer-create "*SkinTwin-Dashboard*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (org-mode)
+      (insert "#+TITLE: SkinTwin Interactive Dashboard\n")
+      (insert "#+AUTHOR: OpenCog Dermatological Model\n")
+      (insert "#+DATE: 2025\n\n")
+      
+      ;; Add button functions with keyboard shortcuts
+      (insert "* SkinTwin Dashboard Controls\n\n")
+      
+      (insert "Press the following keys for different actions:\n\n")
+      (insert "| Key | Action | Description |\n")
+      (insert "|-----|--------|-------------|\n")
+      (insert "| i | Initialize System | Set up all SkinTwin components |\n")
+      (insert "| g | Knowledge Graph | Visualize the knowledge graph |\n")
+      (insert "| q | Query Treatments | Search for treatments by condition |\n")
+      (insert "| p | Add Patient | Add a new patient to the system |\n")
+      (insert "| a | Analyze Patient | Perform analysis on a patient |\n")
+      (insert "| f | Predict Progression | Forecast disease progression with ESN |\n")
+      (insert "| t | Train System | Update learning models with new data |\n")
+      (insert "| r | Run Reasoning | Apply PLN reasoning to discover new relationships |\n")
+      (insert "| e | Export Knowledge | Export the knowledge base to an Org file |\n")
+      (insert "| h | Help | Display help information |\n")
+      
+      ;; System Status Section
+      (insert "\n* System Status\n\n")
+      
+      ;; Knowledge base statistics
+      (insert "** Knowledge Base\n")
+      (insert (format "- Total Concepts: %d\n" (hash-table-count aichat-opencog-kb)))
+      
+      ;; Get counts of different atom types
+      (let ((concepts 0)
+            (predicates 0)
+            (links 0))
+        (maphash (lambda (_k v)
+                   (case (aichat-symbolic-atom-type v)
+                     ('concept (setq concepts (1+ concepts)))
+                     ('predicate (setq predicates (1+ predicates)))
+                     (otherwise (setq links (1+ links)))))
+                 aichat-opencog-kb)
+        
+        (insert (format "- Concepts: %d\n" concepts))
+        (insert (format "- Predicates: %d\n" predicates))
+        (insert (format "- Relationships: %d\n" links)))
+      
+      ;; Components Status
+      (insert "\n** Components Status\n")
+      (insert "| Component | Status | Description |\n")
+      (insert "|-----------|--------|-------------|\n")
+      (insert (format "| DermatoGraph | %s | Knowledge representation system |\n" 
+                     (if (fboundp 'skintwin-create-dermatograph) "Active ✓" "Inactive ✗")))
+      (insert (format "| SensoryFocus | %s | Attention allocation system |\n" 
+                     (if (fboundp 'aichat-ecan-update) "Active ✓" "Inactive ✗")))
+      (insert (format "| DermatoLogic | %s | Probabilistic reasoning system |\n" 
+                     (if (fboundp 'aichat-pln-reason) "Active ✓" "Inactive ✗")))
+      (insert (format "| EpidermiLearn | %s | Program evolution system |\n" 
+                     (if (fboundp 'aichat-moses-evolve) "Active ✓" "Inactive ✗")))
+      (insert (format "| ESN Prediction | %s | Temporal pattern prediction |\n" 
+                     (if (fboundp 'aichat-esn-update) "Active ✓" "Inactive ✗")))
+      
+      ;; Recent Activity
+      (insert "\n** Recent Activity\n")
+      (insert "- System initialized and knowledge base populated\n")
+      (insert "- Basic dermatological concepts and relationships defined\n")
+      (insert "- Attention allocation configured for skin biology domain\n")
+      
+      ;; Visualizations Section
+      (insert "\n* Quick Visualizations\n\n")
+      
+      ;; Attention Distribution
+      (insert "** Attention Distribution\n")
+      (insert "```\n")
+      (let ((attention-values '()))
+        (maphash (lambda (k v)
+                   (when (aichat-ecan-get-av v)
+                     (push (cons (aichat-symbolic-atom-name v) 
+                                (aichat-ecan-av-sti (aichat-ecan-get-av v))) 
+                           attention-values)))
+                 aichat-opencog-kb)
+        (setq attention-values 
+              (sort attention-values
+                    (lambda (a b) (> (cdr a) (cdr b)))))
+        (let ((top-values (seq-take attention-values 5)))
+          (dolist (pair top-values)
+            (let* ((name (car pair))
+                   (sti (cdr pair))
+                   (bar-length (floor (* sti 20))))
+              (insert (format "%s %s %.2f\n" 
+                             (make-string (min 15 (length name)) ? )
+                             (make-string bar-length ?|)
+                             sti))))))
+      (insert "```\n")
+      
+      ;; Set up keybindings for the dashboard
+      (use-local-map (copy-keymap org-mode-map))
+      (local-set-key (kbd "i") (lambda () (interactive) (skintwin-initialize)))
+      (local-set-key (kbd "g") (lambda () (interactive) (skintwin-visualize-graph)))
+      (local-set-key (kbd "q") (lambda () (interactive) (call-interactively #'skintwin-query-treatments)))
+      (local-set-key (kbd "p") (lambda () (interactive) (call-interactively #'skintwin-add-patient)))
+      (local-set-key (kbd "a") (lambda () (interactive) (call-interactively #'skintwin-analyze-patient)))
+      (local-set-key (kbd "f") (lambda () (interactive) (call-interactively #'skintwin-predict-progression)))
+      (local-set-key (kbd "r") (lambda () 
+                               (interactive) 
+                               (aichat-pln-reason aichat-opencog-kb)
+                               (message "Applied probabilistic reasoning to knowledge base")))
+      (local-set-key (kbd "e") (lambda () 
+                               (interactive)
+                               (aichat-opencog-org-kb-to-buffer)
+                               (message "Knowledge base exported to *OpenCog-Org* buffer")))
+      (local-set-key (kbd "h") (lambda ()
+                               (interactive)
+                               (let ((help-buffer (get-buffer-create "*SkinTwin-Help*")))
+                                 (with-current-buffer help-buffer
+                                   (erase-buffer)
+                                   (insert "# SkinTwin Help\n\n")
+                                   (insert "SkinTwin is a multiscale dermatological model based on OpenCog's cognitive architecture.\n\n")
+                                   (insert "## Key Components\n\n")
+                                   (insert "- **DermatoGraph**: Knowledge representation using AtomSpace\n")
+                                   (insert "- **SensoryFocus**: Attention allocation using ECAN\n")
+                                   (insert "- **DermatoLogic**: Reasoning using PLN\n")
+                                   (insert "- **EpidermiLearn**: Pattern mining using MOSES\n")
+                                   (insert "- **RuleDerm**: Rule-based reasoning using URE\n")
+                                   (insert "- **ESN Prediction**: Temporal pattern recognition\n\n")
+                                   (insert "## Dashboard Usage\n\n")
+                                   (insert "Use the keyboard shortcuts shown in the dashboard to interact with the system.\n")
+                                   (markdown-mode)
+                                   (goto-char (point-min)))
+                                 (display-buffer help-buffer)))))
+    
+    (switch-to-buffer buffer)))
+#+END_SRC
+
+* Enhanced Knowledge Import
+:PROPERTIES:
+:STI: 0.860
+:LTI: 0.650
+:END:
+
+** Knowledge Import Components
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+System for importing external knowledge sources into the SkinTwin knowledge base.
+imports(external_data)
+integrates(research_findings)
+enhances(knowledge_base)
+validates(imported_content)
+
+*** Implementation
+#+BEGIN_SRC elisp
+(defun skintwin-import-org-file (file)
+  "Import knowledge from an org FILE into the SkinTwin knowledge base."
+  (interactive "fSelect Org file to import: ")
+  (let ((import-count 0))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (org-mode)
+      (goto-char (point-min))
+      (message "Importing knowledge from %s..." (file-name-nondirectory file))
+      
+      ;; Process each heading
+      (while (re-search-forward org-heading-regexp nil t)
+        (let* ((heading (org-get-heading t t t t))
+               (level (org-current-level))
+               (parent-headings '())
+               (content (org-get-entry)))
+          
+          ;; Create concept for the heading
+          (let ((concept (aichat-symbolic-concept heading)))
+            ;; Add to KB
+            (aichat-opencog-kb-add concept)
+            (setq import-count (1+ import-count))
+            
+            ;; Get properties from PROPERTIES drawer
+            (save-excursion
+              (forward-line)
+              (when (re-search-forward ":PROPERTIES:" (save-excursion (org-end-of-subtree t)) t)
+                (forward-line)
+                (while (and (not (looking-at ":END:"))
+                            (not (eobp)))
+                  (when (looking-at "\\s-*:\\([A-Za-z0-9_]+\\):\\s-*\\(.*\\)")
+                    (let ((prop-name (match-string 1))
+                          (prop-value (match-string 2)))
+                      ;; Handle special properties like STI, LTI, VLTI
+                      (cond
+                       ((string= prop-name "STI")
+                        (let ((av (or (aichat-ecan-get-av concept)
+                                     (aichat-ecan-make-av))))
+                          (setf (aichat-ecan-av-sti av) 
+                                (string-to-number prop-value))
+                          (aichat-ecan-set-av concept av)))
+                       
+                       ((string= prop-name "LTI")
+                        (let ((av (or (aichat-ecan-get-av concept)
+                                     (aichat-ecan-make-av))))
+                          (setf (aichat-ecan-av-lti av) 
+                                (string-to-number prop-value))
+                          (aichat-ecan-set-av concept av)))
+                       
+                       ((string= prop-name "VLTI")
+                        (let ((av (or (aichat-ecan-get-av concept)
+                                     (aichat-ecan-make-av))))
+                          (setf (aichat-ecan-av-vlti av) 
+                                (string= prop-value "t"))
+                          (aichat-ecan-set-av concept av)))
+                       
+                       ;; Other properties become predicates
+                       (t
+                        (let ((pred (aichat-symbolic-predicate (downcase prop-name)))
+                              (value (aichat-symbolic-concept prop-value)))
+                          (aichat-opencog-kb-add pred)
+                          (aichat-opencog-kb-add value)
+                          (aichat-opencog-kb-add
+                           (aichat-symbolic-evaluation pred (list concept value))))))))
+                  (forward-line))))
+            
+            ;; Process content for predicates/relationships (lines like "predicate(arg)")
+            (save-excursion
+              (let ((end-pos (save-excursion (org-end-of-subtree t))))
+                (while (re-search-forward "\\([a-zA-Z0-9_-]+\\)(\\([^)]+\\))" end-pos t)
+                  (let* ((pred-name (match-string 1))
+                         (args-str (match-string 2))
+                         (args (split-string args-str ",")))
+                    
+                    ;; Create predicate and argument concepts
+                    (let* ((pred (aichat-symbolic-predicate pred-name))
+                           (arg-concepts (mapcar (lambda (arg)
+                                                 (let ((trimmed-arg (string-trim arg)))
+                                                   (aichat-symbolic-concept trimmed-arg)))
+                                               args)))
+                      
+                      ;; Add all to KB
+                      (aichat-opencog-kb-add pred)
+                      (dolist (arg arg-concepts)
+                        (aichat-opencog-kb-add arg))
+                      
+                      ;; Create the evaluation link
+                      (if (= (length arg-concepts) 1)
+                          ;; Unary predicate
+                          (aichat-opencog-kb-add
+                           (aichat-symbolic-evaluation pred (list concept (car arg-concepts))))
+                        ;; Binary or n-ary predicate - apply to the concept
+                        (aichat-opencog-kb-add
+                         (aichat-symbolic-evaluation pred (cons concept arg-concepts)))))))))
+            
+            ;; Handle hierarchical relationships
+            (save-excursion
+              (outline-up-heading 1 t)
+              (when (not (bobp)) ;; If we have a parent
+                (let* ((parent-heading (org-get-heading t t t t))
+                       (parent-concept (aichat-symbolic-concept parent-heading)))
+                  
+                  ;; Create inheritance relationship
+                  (let ((inheritance (aichat-symbolic-inheritance parent-concept concept)))
+                    (aichat-opencog-kb-add inheritance)))))))))
+    
+    (message "Imported %d concepts from %s" 
+             import-count (file-name-nondirectory file))))
+
+(defun skintwin-export-knowledge-base (output-file)
+  "Export the SkinTwin knowledge base to an Org file at OUTPUT-FILE."
+  (interactive "FExport to file: ")
+  (with-temp-file output-file
+    (insert "#+TITLE: SkinTwin Knowledge Base Export\n")
+    (insert "#+AUTHOR: OpenCog Dermatological Model\n")
+    (insert "#+DATE: 2025\n\n")
+    
+    ;; Build a hierarchical representation
+    (insert "* Knowledge Hierarchy\n\n")
+    
+    ;; First, build the inheritance hierarchy
+    (let ((hierarchy (make-hash-table :test 'equal))
+          (top-level-concepts '()))
+      
+      ;; Find all inheritance relationships
+      (maphash (lambda (k v)
+                 (when (eq (aichat-symbolic-atom-type v) 'inheritance)
+                   (let* ((links (aichat-symbolic-atom-links v))
+                          (parent (car links))
+                          (child (cadr links))
+                          (parent-name (aichat-symbolic-atom-name parent))
+                          (child-name (aichat-symbolic-atom-name child))
+                          (parent-children (gethash parent-name hierarchy '())))
+                     
+                     ;; Add child to parent's children list
+                     (puthash parent-name 
+                              (cons child-name parent-children)
+                              hierarchy))))
+               aichat-opencog-kb)
+      
+      ;; Find top-level concepts (those that are parents but not children)
+      (let ((all-parents '())
+            (all-children '()))
+        (maphash (lambda (parent children)
+                   (push parent all-parents)
+                   (setq all-children (append children all-children)))
+                 hierarchy)
+        
+        ;; Top-level are parents that are not children
+        (setq top-level-concepts 
+              (cl-set-difference all-parents all-children :test 'string=)))
+      
+      ;; Function to recursively output the hierarchy
+      (cl-labels ((output-hierarchy (concept level)
+                                   (let ((children (gethash concept hierarchy '()))
+                                         (indent (make-string (* level 2) ? ))
+                                         (atom (aichat-opencog-kb-get concept)))
+                                     
+                                     ;; Output this concept
+                                     (insert (format "%s* %s\n" indent concept))
+                                     
+                                     ;; Add properties if available
+                                     (when atom
+                                       (let ((av (aichat-ecan-get-av atom)))
+                                         (when av
+                                           (insert (format "%s  :PROPERTIES:\n" indent))
+                                           (insert (format "%s  :STI: %.3f\n" indent (aichat-ecan-av-sti av)))
+                                           (insert (format "%s  :LTI: %.3f\n" indent (aichat-ecan-av-lti av)))
+                                           (insert (format "%s  :VLTI: %s\n" indent 
+                                                          (if (aichat-ecan-av-vlti av) "t" "nil")))
+                                           (insert (format "%s  :END:\n" indent)))))
+                                     
+                                     ;; Output all predicates related to this concept
+                                     (when atom
+                                       (let ((predicates '()))
+                                         (maphash (lambda (k v)
+                                                  (when (and (eq (aichat-symbolic-atom-type v) 'evaluation)
+                                                           (let ((links (aichat-symbolic-atom-links v)))
+                                                             (and (>= (length links) 2)
+                                                                  (equal (aichat-symbolic-atom-name (cadr links)) 
+                                                                         concept))))
+                                                    (push v predicates)))
+                                                aichat-opencog-kb)
+                                         
+                                         (dolist (pred-rel predicates)
+                                           (let* ((links (aichat-symbolic-atom-links pred-rel))
+                                                  (pred (car links))
+                                                  (args (cddr links))
+                                                  (pred-name (aichat-symbolic-atom-name pred)))
+                                             
+                                             (insert (format "%s  %s(%s)\n" 
+                                                           indent
+                                                           pred-name
+                                                           (mapconcat (lambda (arg) 
+                                                                       (aichat-symbolic-atom-name arg))
+                                                                     args ", ")))))))
+                                     
+                                     ;; Recursively output children
+                                     (dolist (child children)
+                                       (output-hierarchy child (1+ level))))))
+        
+        ;; Output starting from top-level concepts
+        (dolist (concept top-level-concepts)
+          (output-hierarchy concept 1))))
+    
+    ;; Output all predicates and their uses
+    (insert "\n* Predicates\n\n")
+    (let ((predicates (make-hash-table :test 'equal)))
+      
+      ;; Collect all predicates
+      (maphash (lambda (k v)
+                 (when (eq (aichat-symbolic-atom-type v) 'predicate)
+                   (puthash k v predicates)))
+               aichat-opencog-kb)
+      
+      ;; Output each predicate
+      (maphash (lambda (k v)
+                 (let* ((pred-name (aichat-symbolic-atom-name v))
+                        (eval-pattern (aichat-symbolic-atom 'evaluation v nil nil nil))
+                        (uses (aichat-opencog-match-pattern eval-pattern aichat-opencog-kb)))
+                   
+                   (when uses
+                     (insert (format "** %s\n" pred-name))
+                     (insert (format "   Used in %d relationships\n\n" (length uses)))
+                     
+                     ;; Output examples (limit to 5)
+                     (insert "   Examples:\n")
+                     (dotimes (i (min 5 (length uses)))
+                       (let* ((use (nth i uses))
+                              (links (aichat-symbolic-atom-links use))
+                              (args (cdr links)))
+                         (insert (format "   - %s(%s)\n" 
+                                        pred-name
+                                        (mapconcat (lambda (arg) 
+                                                    (aichat-symbolic-atom-name arg))
+                                                  args ", "))))))))
+               predicates))
+    
+    ;; Add a section for attention values
+    (insert "\n* Attention Distribution\n\n")
+    (insert "| Concept | STI | LTI | VLTI |\n")
+    (insert "|---------|-----|-----|------|\n")
+    
+    (let ((atoms-with-av '()))
+      (maphash (lambda (k v)
+                 (when (aichat-ecan-get-av v)
+                   (push v atoms-with-av)))
+               aichat-opencog-kb)
+      
+      ;; Sort by STI
+      (setq atoms-with-av 
+            (sort atoms-with-av
+                  (lambda (a b)
+                    (> (aichat-ecan-av-sti (aichat-ecan-get-av a))
+                       (aichat-ecan-av-sti (aichat-ecan-get-av b))))))
+      
+      ;; Output top 20
+      (dotimes (i (min 20 (length atoms-with-av)))
+        (let* ((atom (nth i atoms-with-av))
+               (name (aichat-symbolic-atom-name atom))
+               (av (aichat-ecan-get-av atom))
+               (sti (aichat-ecan-av-sti av))
+               (lti (aichat-ecan-av-lti av))
+               (vlti (aichat-ecan-av-vlti av)))
+          (insert (format "| %s | %.3f | %.3f | %s |\n" 
+                         name sti lti (if vlti "Yes" "No"))))))
+    
+    (message "Knowledge base exported to %s" output-file)))
+#+END_SRC
+
+* Future Development Roadmap
+:PROPERTIES:
+:STI: 0.850
+:LTI: 0.680
+:END:
+
+** Planned Enhancements
+:PROPERTIES:
+:STI: 0.830
+:END:
+
+Future development plans for the SkinTwin OpenCog-based dermatological model.
+includes(personalized_medicine)
+enhances(prediction_accuracy)
+integrates(external_data_sources)
+extends(visualization_capabilities)
+
+1. Integration with patient genomic data for personalized treatment recommendations
+2. Enhanced ESN models for long-term condition progression prediction
+3. Natural language interface for clinical query processing
+4. Interactive 3D visualization of skin anatomy with attention highlighting
+5. Machine learning integration for automated knowledge extraction from research papers
+
+** Implementation Roadmap
+
+#+BEGIN_SRC elisp
+(defun skintwin-display-roadmap ()
+  "Display the development roadmap for SkinTwin."
+  (interactive)
+  (let ((buffer (get-buffer-create "*SkinTwin-Roadmap*")))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (org-mode)
+      (insert "#+TITLE: SkinTwin Development Roadmap\n")
+      (insert "#+AUTHOR: OpenCog Dermatological Model\n")
+      (insert "#+DATE: 2025\n\n")
+      
+      (insert "* Phase 1: Core Architecture (Completed)\n\n")
+      (insert "- [X] Knowledge representation with AtomSpace (DermatoGraph)\n")
+      (insert "- [X] Attention allocation with ECAN (SensoryFocus)\n")
+      (insert "- [X] Probabilistic reasoning with PLN (DermatoLogic)\n")
+      (insert "- [X] Program evolution with MOSES (EpidermiLearn)\n")
+      (insert "- [X] Rule-based reasoning with URE (RuleDerm)\n")
+      (insert "- [X] Temporal pattern prediction with ESN\n")
+      
+      (insert "\n* Phase 2: Enhanced Analysis Capabilities (Current Phase)\n\n")
+      (insert "- [X] Comprehensive patient analysis system\n")
+      (insert "- [X] Disease progression prediction\n")
+      (insert "- [X] Interactive knowledge graph visualization\n")
+      (insert "- [X] Knowledge import/export functionality\n")
+      (insert "- [ ] Advanced symptom analysis and correlation\n")
+      (insert "- [ ] Treatment efficacy comparison tools\n")
+      (insert "- [ ] Side effect prediction and mitigation\n")
+      
+      (insert "\n* Phase 3: Personalized Medicine Integration (Upcoming)\n\n")
+      (insert "- [ ] Genomic data integration\n")
+      (insert "- [ ] Biomarker analysis and correlation\n")
+      (insert "- [ ] Personalized treatment optimization\n")
+      (insert "- [ ] Microbiome analysis and influence modeling\n")
+      (insert "- [ ] Immune response prediction\n")
+      
+      (insert "\n* Phase 4: Advanced Visualization and Interface (Planned)\n\n")
+      (insert "- [ ] 3D anatomical visualization with pathology overlay\n")
+      (insert "- [ ] Real-time attention flow visualization\n")
+      (insert "- [ ] Natural language clinical query processing\n")
+      (insert "- [ ] Multi-modal input (images, sensor data, text)\n")
+      (insert "- [ ] Treatment simulation and outcome visualization\n")
+      
+      (insert "\n* Phase 5: External Integration and Deployment (Future)\n\n")
+      (insert "- [ ] Integration with electronic health records\n")
+      (insert "- [ ] Real-time sensor data processing\n")
+      (insert "- [ ] Research literature automated knowledge extraction\n")
+      (insert "- [ ] Clinical decision support system\n")
+      (insert "- [ ] Mobile/wearable integration for continuous monitoring\n")
+      
+      (insert "\n* Implementation Timeline\n\n")
+      (insert "```\n")
+      (insert "2025 Q1 |=========|           |            |             |\n")
+      (insert "2025 Q2 |         |=========| |            |             |\n")
+      (insert "2025 Q3 |         |           |=========|  |             |\n")
+      (insert "2025 Q4 |         |           |            |=============|\n")
+      (insert "        Phase 1     Phase 2     Phase 3      Phase 4&5   \n")
+      (insert "```\n")
+      
+      (insert "\n* Key Research Challenges\n\n")
+      (insert "1. **Integrating heterogeneous data sources** - Combining genetic, clinical, and environmental data\n")
+      (insert "2. **Temporal dynamics modeling** - Capturing disease progression and treatment response over time\n")
+      (insert "3. **Uncertainty management** - Handling incomplete and noisy clinical data\n")
+      (insert "4. **Interpretability** - Ensuring reasoning processes are transparent and explainable\n")
+      (insert "5. **Personalization** - Adapting recommendations to individual patient characteristics\n"))
+    
+    (display-buffer buffer)))
+#+END_SRC

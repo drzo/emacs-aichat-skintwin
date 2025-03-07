@@ -1,0 +1,389 @@
+#+TITLE: SkinTwin Custom Reasoning Demo
+#+AUTHOR: AI Chat
+#+DATE: 2025
+#+PROPERTY: header-args :results output :exports both
+
+* Introduction to Custom Reasoning
+
+This demonstration shows how to implement custom reasoning patterns
+for dermatological conditions using SkinTwin's OpenCog integration.
+
+* Implementing Custom PLN Rules
+
+We'll create custom Probabilistic Logic Network (PLN) rules
+specific to dermatological conditions.
+
+** Treatment Compatibility Rule
+
+This rule determines if treatments can be used together safely.
+
+#+BEGIN_SRC elisp
+(defun skintwin-compatible-treatments-rule (treatment1 treatment2)
+  "PLN rule to determine if TREATMENT1 and TREATMENT2 can be used together."
+  (interactive)
+  ;; Get the treatment atoms
+  (let* ((t1 (aichat-opencog-kb-get treatment1))
+         (t2 (aichat-opencog-kb-get treatment2))
+         (compatibility-tv nil))
+    
+    (if (and t1 t2)
+        (progn
+          ;; 1. Check if they have conflicting mechanisms
+          (let* ((t1-mechanism (skintwin-get-treatment-mechanism t1))
+                 (t2-mechanism (skintwin-get-treatment-mechanism t2))
+                 (conflicting (skintwin-mechanisms-conflict-p t1-mechanism t2-mechanism)))
+            
+            ;; 2. Calculate compatibility
+            (let ((confidence 0.8)
+                  (strength (if conflicting 0.3 0.9)))
+              (setq compatibility-tv (aichat-pln-make-tv strength confidence))
+              
+              ;; 3. Add the compatibility relationship to the knowledge base
+              (let ((compatible-pred (aichat-symbolic-predicate "compatible_with")))
+                (aichat-opencog-kb-add compatible-pred)
+                (aichat-opencog-kb-add 
+                 (aichat-symbolic-evaluation compatible-pred (list t1 t2) compatibility-tv))
+                (message "Added compatibility between %s and %s: %.2f" 
+                         treatment1 treatment2 strength))))
+          (message "Treatment atoms not found in knowledge base"))))
+
+(defun skintwin-get-treatment-mechanism (treatment)
+  "Get the mechanism of action for TREATMENT."
+  (let* ((mechanism-pred (aichat-symbolic-predicate "mechanism"))
+         (mechanism-pattern (aichat-symbolic-evaluation 
+                            mechanism-pred (list treatment nil) nil))
+         (mechanisms (aichat-opencog-match-pattern 
+                     mechanism-pattern aichat-opencog-kb)))
+    
+    ;; Return list of mechanism names
+    (mapcar (lambda (mech-rel)
+              (let* ((links (aichat-symbolic-atom-links mech-rel))
+                     (mechanism (cadr links)))
+                (aichat-symbolic-atom-name mechanism)))
+            mechanisms)))
+
+(defun skintwin-mechanisms-conflict-p (mechanisms1 mechanisms2)
+  "Determine if MECHANISMS1 and MECHANISMS2 conflict."
+  ;; Define conflicting mechanism pairs
+  (let ((conflicting-pairs '(("antibiotic" . "probiotic")
+                            ("retinoid" . "benzoyl_peroxide")
+                            ("antiinflammatory" . "immunostimulant"))))
+    
+    ;; Check for conflicts
+    (cl-some (lambda (pair)
+               (and (member (car pair) mechanisms1)
+                    (member (cdr pair) mechanisms2)))
+             conflicting-pairs)))
+
+;; Test the rule with treatments
+(skintwin-compatible-treatments-rule "corticosteroid" "retinoid")
+#+END_SRC
+
+* Treatment Efficacy Prediction Based on Patient Characteristics
+
+This rule predicts treatment efficacy based on patient age, gender, and other characteristics.
+
+#+BEGIN_SRC elisp
+(defun skintwin-personalized-efficacy-rule (patient-id condition-name treatment-name)
+  "Predict personalized efficacy of TREATMENT-NAME for PATIENT-ID with CONDITION-NAME."
+  (interactive)
+  (let* ((patient (aichat-opencog-kb-get patient-id))
+         (condition (aichat-opencog-kb-get condition-name))
+         (treatment (aichat-opencog-kb-get treatment-name)))
+    
+    (if (and patient condition treatment)
+        (let* ((base-efficacy (skintwin-get-base-efficacy treatment condition))
+               (patient-age (skintwin-get-patient-property patient "age"))
+               (patient-gender (skintwin-get-patient-property patient "gender"))
+               (patient-skin-type (skintwin-get-patient-property patient "skin_type"))
+               
+               ;; Apply modifiers based on patient characteristics
+               (age-modifier (skintwin-get-age-modifier treatment patient-age))
+               (gender-modifier (skintwin-get-gender-modifier treatment patient-gender))
+               (skin-type-modifier (skintwin-get-skin-type-modifier treatment patient-skin-type))
+               
+               ;; Calculate personalized efficacy
+               (efficacy-strength (* base-efficacy 
+                                    age-modifier 
+                                    gender-modifier 
+                                    skin-type-modifier))
+               (efficacy-tv (aichat-pln-make-tv 
+                            (min 1.0 efficacy-strength) 
+                            0.8)))
+          
+          ;; Add personalized efficacy to knowledge base
+          (let ((efficacy-pred (aichat-symbolic-predicate "personalized_efficacy")))
+            (aichat-opencog-kb-add efficacy-pred)
+            (aichat-opencog-kb-add
+             (aichat-symbolic-evaluation 
+              efficacy-pred 
+              (list treatment condition patient) 
+              efficacy-tv))
+            
+            (message "Predicted efficacy of %s for %s (%s): %.2f" 
+                     treatment-name condition-name patient-id efficacy-strength)))
+      
+      (message "Patient, condition, or treatment not found"))))
+
+(defun skintwin-get-patient-property (patient property)
+  "Get PROPERTY value for PATIENT."
+  (let* ((pred (aichat-symbolic-predicate property))
+         (pattern (aichat-symbolic-evaluation 
+                  pred (list patient nil) nil))
+         (matches (aichat-opencog-match-pattern 
+                  pattern aichat-opencog-kb)))
+    
+    (when matches
+      (let* ((match (car matches))
+             (links (aichat-symbolic-atom-links match))
+             (value (cadr links)))
+        (if (numberp value)
+            value
+          (aichat-symbolic-atom-name value))))))
+
+(defun skintwin-get-base-efficacy (treatment condition)
+  "Get base efficacy of TREATMENT for CONDITION."
+  (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+         (treats-pattern (aichat-symbolic-evaluation 
+                         treats-pred (list treatment condition) nil))
+         (treats-rel (aichat-opencog-match-pattern 
+                     treats-pattern aichat-opencog-kb)))
+    
+    (if treats-rel
+        (aichat-pln-tv-mean (aichat-symbolic-atom-tv (car treats-rel)))
+      0.5))) ; Default moderate efficacy
+
+(defun skintwin-get-age-modifier (treatment age)
+  "Get efficacy modifier based on AGE for TREATMENT."
+  (let ((treatment-name (aichat-symbolic-atom-name treatment)))
+    (cond
+     ;; Age-specific modifiers for retinoids
+     ((and (string= treatment-name "retinoid") (numberp age))
+      (cond
+       ((< age 18) 0.8)  ; Less effective for younger patients
+       ((> age 60) 0.9)  ; Slightly less effective for older patients
+       (t 1.0)))         ; Normal efficacy for middle-aged patients
+     
+     ;; Age-specific modifiers for corticosteroids
+     ((and (string= treatment-name "corticosteroid") (numberp age))
+      (cond
+       ((< age 12) 0.7)  ; Use with caution in children
+       ((> age 70) 0.8)  ; More side effects in elderly
+       (t 1.0)))         ; Normal efficacy for others
+     
+     ;; Default - no modification
+     (t 1.0))))
+
+(defun skintwin-get-gender-modifier (treatment gender)
+  "Get efficacy modifier based on GENDER for TREATMENT."
+  (let ((treatment-name (aichat-symbolic-atom-name treatment)))
+    (cond
+     ;; Most treatments have minimal gender differences
+     ((and (string= treatment-name "antibiotic") 
+           (string= gender "female"))
+      0.95)  ; Slightly lower efficacy due to hormonal interactions
+     
+     ;; Default - no modification
+     (t 1.0))))
+
+(defun skintwin-get-skin-type-modifier (treatment skin-type)
+  "Get efficacy modifier based on SKIN-TYPE for TREATMENT."
+  (let ((treatment-name (aichat-symbolic-atom-name treatment)))
+    (cond
+     ;; Skin type modifiers for retinoids
+     ((and (string= treatment-name "retinoid")
+           (member skin-type '("I" "II")))
+      0.85)  ; More irritation in fair skin types
+     
+     ;; Default - no modification
+     (t 1.0))))
+
+;; Test the rule with a patient
+(skintwin-personalized-efficacy-rule "patient-001" "psoriasis" "corticosteroid")
+#+END_SRC
+
+* Multiple Treatment Strategy Recommendation
+
+This rule suggests treatment combinations based on synergistic effects.
+
+#+BEGIN_SRC elisp
+(defun skintwin-recommend-treatment-strategy (condition-name)
+  "Recommend treatment strategies (combinations) for CONDITION-NAME."
+  (interactive "sCondition name: ")
+  (let* ((condition (aichat-opencog-kb-get condition-name))
+         (buffer (get-buffer-create "*SkinTwin-Treatment-Strategy*")))
+    
+    (if (null condition)
+        (message "Condition '%s' not found" condition-name)
+      
+      ;; Find all treatments for this condition
+      (let* ((treats-pred (aichat-symbolic-predicate "treats"))
+             (treats-pattern (aichat-symbolic-evaluation 
+                             treats-pred (list nil condition) nil))
+             (treatment-rels (aichat-opencog-match-pattern 
+                             treats-pattern aichat-opencog-kb))
+             (treatments '()))
+        
+        ;; Extract treatment atoms
+        (dolist (rel treatment-rels)
+          (let* ((links (aichat-symbolic-atom-links rel))
+                 (treatment (car (cdr (car links)))))
+            (push treatment treatments)))
+        
+        ;; Generate all possible pairs
+        (let ((pairs '()))
+          (dotimes (i (length treatments))
+            (dotimes (j (length treatments))
+              (when (< i j)
+                (let ((t1 (nth i treatments))
+                      (t2 (nth j treatments)))
+                  (push (list t1 t2) pairs)))))
+          
+          ;; Check compatibility and calculate synergy for each pair
+          (let ((treatment-pairs '()))
+            (dolist (pair pairs)
+              (let* ((t1 (car pair))
+                     (t2 (cadr pair))
+                     (t1-name (aichat-symbolic-atom-name t1))
+                     (t2-name (aichat-symbolic-atom-name t2))
+                     (compatible-tv (skintwin-get-compatibility t1 t2))
+                     (synergy-score (skintwin-calculate-synergy t1 t2 condition))
+                     (combined-score (* (aichat-pln-tv-mean compatible-tv) synergy-score)))
+                
+                (push (list t1-name t2-name combined-score) treatment-pairs)))
+            
+            ;; Sort by combined score
+            (setq treatment-pairs 
+                  (sort treatment-pairs
+                        (lambda (a b) (> (nth 2 a) (nth 2 b)))))
+            
+            ;; Display results
+            (with-current-buffer buffer
+              (erase-buffer)
+              (org-mode)
+              (insert (format "#+TITLE: Treatment Strategies for %s\n\n" condition-name))
+              
+              (insert "* Recommended Treatment Combinations\n\n")
+              (insert "| Primary Treatment | Secondary Treatment | Synergy Score | Recommendation |\n")
+              (insert "|-------------------|---------------------|---------------|----------------|\n")
+              
+              (dolist (pair treatment-pairs)
+                (let* ((t1 (nth 0 pair))
+                       (t2 (nth 1 pair))
+                       (score (nth 2 pair))
+                       (recommendation (cond
+                                       ((>= score 0.8) "Highly Recommended")
+                                       ((>= score 0.6) "Recommended")
+                                       ((>= score 0.4) "Consider")
+                                       (t "Not Recommended"))))
+                  (insert (format "| %s | %s | %.2f | %s |\n" 
+                                 t1 t2 score recommendation))))
+              
+              (insert "\n* Interpretation\n\n")
+              (insert "Treatment combinations are evaluated based on:\n\n")
+              (insert "1. **Compatibility** - Whether the treatments can be used together safely\n")
+              (insert "2. **Synergy** - Whether the treatments enhance each other's efficacy\n")
+              (insert "3. **Complementary Mechanisms** - Whether the treatments target different aspects of the condition\n\n")
+              
+              (insert "Higher synergy scores indicate better expected outcomes from combination therapy.\n"))
+            
+            (display-buffer buffer)))))
+    
+    ;; Return buffer for testing
+    buffer))
+
+(defun skintwin-get-compatibility (t1 t2)
+  "Get compatibility truth value between T1 and T2."
+  (let* ((compatible-pred (aichat-symbolic-predicate "compatible_with"))
+         (compatible-pattern (aichat-symbolic-evaluation 
+                             compatible-pred (list t1 t2) nil))
+         (compatible-rel (aichat-opencog-match-pattern 
+                         compatible-pattern aichat-opencog-kb)))
+    
+    (if compatible-rel
+        (aichat-symbolic-atom-tv (car compatible-rel))
+      ;; If no explicit compatibility, check for mechanism conflicts
+      (let* ((t1-mechanism (skintwin-get-treatment-mechanism t1))
+             (t2-mechanism (skintwin-get-treatment-mechanism t2))
+             (conflicting (skintwin-mechanisms-conflict-p t1-mechanism t2-mechanism)))
+        (if conflicting
+            (aichat-pln-make-tv 0.3 0.6)  ; Probably incompatible
+          (aichat-pln-make-tv 0.8 0.6)))))) ; Probably compatible
+
+(defun skintwin-calculate-synergy (t1 t2 condition)
+  "Calculate synergy score between T1 and T2 for CONDITION."
+  (let* ((t1-mechanisms (skintwin-get-treatment-mechanism t1))
+         (t2-mechanisms (skintwin-get-treatment-mechanism t2))
+         ;; Check if mechanisms are complementary (different)
+         (common-mechanisms (cl-intersection t1-mechanisms t2-mechanisms :test 'string=))
+         (complementary-score (if common-mechanisms 
+                                 (- 1.0 (/ (float (length common-mechanisms)) 
+                                          (max (length t1-mechanisms) (length t2-mechanisms))))
+                               1.0))
+         
+         ;; Get efficacy scores
+         (t1-efficacy (skintwin-get-base-efficacy t1 condition))
+         (t2-efficacy (skintwin-get-base-efficacy t2 condition))
+         
+         ;; Calculate combined potential
+         (potential-score (/ (+ t1-efficacy t2-efficacy) 2.0)))
+    
+    ;; Combine scores (complementary mechanisms are good)
+    (* complementary-score potential-score)))
+
+;; Test the rule with a condition
+(skintwin-recommend-treatment-strategy "psoriasis")
+#+END_SRC
+
+* Using Custom Reasoning in the SkinTwin System
+
+These custom reasoning functions can be integrated into the SkinTwin system
+by adding them to the initialization process.
+
+#+BEGIN_SRC elisp
+(defun skintwin-setup-custom-reasoning ()
+  "Set up custom reasoning rules for the SkinTwin system."
+  (interactive)
+  
+  ;; 1. Add compatibility between standard treatments
+  (let ((treatments '("corticosteroid" "retinoid" "antibiotic" "antihistamine")))
+    (dotimes (i (length treatments))
+      (dotimes (j (length treatments))
+        (when (< i j)
+          (skintwin-compatible-treatments-rule 
+           (nth i treatments) (nth j treatments))))))
+  
+  ;; 2. Add personalized efficacy for sample patients
+  (let ((patients '("patient-001"))
+        (conditions '("psoriasis" "eczema" "acne"))
+        (treatments '("corticosteroid" "retinoid" "antibiotic")))
+    
+    (dolist (patient patients)
+      (dolist (condition conditions)
+        (dolist (treatment treatments)
+          (skintwin-personalized-efficacy-rule 
+           patient condition treatment)))))
+  
+  (message "Custom reasoning rules set up successfully"))
+
+;; Run the setup
+(skintwin-setup-custom-reasoning)
+#+END_SRC
+
+* Conclusion
+
+This demonstration shows how to implement custom reasoning patterns in the SkinTwin system:
+
+1. Treatment compatibility rules to identify safe treatment combinations
+2. Personalized efficacy prediction based on patient characteristics
+3. Treatment strategy recommendations with synergy scoring
+
+These custom rules leverage the OpenCog cognitive architecture to provide:
+- Probabilistic reasoning about treatment efficacy
+- Personalized medicine recommendations
+- Evidence-based combination therapy suggestions
+
+The rules can be further extended with:
+- Additional patient factors (comorbidities, allergies)
+- More nuanced drug interaction models
+- Machine learning integration for efficacy prediction
