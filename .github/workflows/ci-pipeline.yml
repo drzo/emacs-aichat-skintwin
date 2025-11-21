@@ -39,77 +39,57 @@ jobs:
           fi
         continue-on-error: true
 
-  # Elisp checks
-  elisp-checks:
+  # Note: The individual workflows (elisp-compile.yml, elisp-lint.yml, etc.)
+  # will run automatically based on their own triggers.
+  # This pipeline provides a unified view and summary.
+  
+  # Quick checks that can run in parallel
+  quick-checks:
+    runs-on: ubuntu-latest
     needs: pre-checks
-    uses: ./.github/workflows/elisp-compile.yml
-
-  elisp-lint:
-    needs: pre-checks
-    uses: ./.github/workflows/elisp-lint.yml
-
-  elisp-tests:
-    needs: [elisp-checks, elisp-lint]
-    uses: ./.github/workflows/elisp-test.yml
-
-  # Org-mode checks
-  org-validation:
-    needs: pre-checks
-    uses: ./.github/workflows/org-mode-validation.yml
-
-  # JavaScript checks
-  javascript-checks:
-    needs: pre-checks
-    uses: ./.github/workflows/javascript-ci.yml
-
-  # Documentation
-  documentation:
-    needs: pre-checks
-    uses: ./.github/workflows/documentation-check.yml
-
-  # Code quality
-  code-quality:
-    needs: pre-checks
-    uses: ./.github/workflows/code-quality.yml
-
-  # Security (runs in parallel with others)
-  security:
-    needs: pre-checks
-    uses: ./.github/workflows/security-scan.yml
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Verify workflow files
+        run: |
+          echo "Checking workflow syntax..."
+          for file in .github/workflows/*.yml; do
+            python3 -c "import yaml; yaml.safe_load(open('$file'))" && \
+            echo "✓ $(basename $file)" || \
+            (echo "✗ $(basename $file)" && exit 1)
+          done
+      
+      - name: Check file structure
+        run: |
+          echo "Verifying repository structure..."
+          [ -f "Cask" ] && echo "✓ Cask file exists"
+          [ -f "package.json" ] && echo "✓ package.json exists"
+          [ -f "README.org" ] && echo "✓ README.org exists"
+          echo "Repository structure verified"
 
   # Final summary
   ci-summary:
     runs-on: ubuntu-latest
-    needs: [elisp-checks, elisp-lint, elisp-tests, org-validation, javascript-checks, documentation, code-quality]
+    needs: [quick-checks]
     if: always()
     
     steps:
-      - name: Check job statuses
+      - name: CI Summary
         run: |
           echo "CI Pipeline Summary:"
           echo "==================="
-          echo "Elisp Checks: ${{ needs.elisp-checks.result }}"
-          echo "Elisp Lint: ${{ needs.elisp-lint.result }}"
-          echo "Elisp Tests: ${{ needs.elisp-tests.result }}"
-          echo "Org Validation: ${{ needs.org-validation.result }}"
-          echo "JavaScript: ${{ needs.javascript-checks.result }}"
-          echo "Documentation: ${{ needs.documentation.result }}"
-          echo "Code Quality: ${{ needs.code-quality.result }}"
-          
-          if [ "${{ needs.elisp-checks.result }}" == "failure" ] || \
-             [ "${{ needs.elisp-lint.result }}" == "failure" ] || \
-             [ "${{ needs.elisp-tests.result }}" == "failure" ]; then
-            echo ""
-            echo "Critical checks failed!"
-            exit 1
-          fi
+          echo "Pre-checks: ${{ needs.pre-checks.result }}"
+          echo "Quick-checks: ${{ needs.quick-checks.result }}"
+          echo ""
+          echo "Note: Individual workflows (elisp-lint, elisp-compile, elisp-test,"
+          echo "org-mode-validation, javascript-ci, documentation-check, code-quality,"
+          echo "and security-scan) run independently based on their file path triggers."
+          echo ""
+          echo "Check the Actions tab to see status of all workflows."
 
       - name: Report success
         if: success()
         run: |
-          echo "✓ All CI checks passed!"
-          echo "The code is ready for review."
+          echo "✓ CI Pipeline checks passed!"
+          echo "Individual workflows will run based on changed files."

@@ -65,7 +65,7 @@ jobs:
       - name: Upload nightly artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nightly-build-$(date +%Y%m%d)
+          name: nightly-build-${{ github.run_number }}
           path: |
             emacs-aichat-skintwin-nightly-*.tar.gz
             dist/
