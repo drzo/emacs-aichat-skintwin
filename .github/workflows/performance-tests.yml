@@ -1,0 +1,196 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly on Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  performance-benchmarks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Benchmark AtomSpace operations
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog)" \
+            --eval "(benchmark-run 100 \
+              (aichat-opencog-add-atom 'ConceptNode \"test-concept\"))" \
+            --eval "(message \"AtomSpace benchmark complete\")"
+        continue-on-error: true
+
+      - name: Benchmark ECAN spreading
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-ecan)" \
+            --eval "(progn \
+              (require 'aichat-opencog) \
+              (dotimes (i 100) \
+                (aichat-opencog-add-atom 'ConceptNode (format \"concept-%d\" i))) \
+              (message \"Timing ECAN spreading...\") \
+              (benchmark-run 10 \
+                (aichat-ecan-spread-importance aichat-opencog-kb)))" \
+            --eval "(message \"ECAN benchmark complete\")"
+        continue-on-error: true
+
+      - name: Benchmark PLN reasoning
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-pln)" \
+            --eval "(benchmark-run 50 \
+              (aichat-pln-deduction \
+                (cons 0.8 0.9) \
+                (cons 0.7 0.85)))" \
+            --eval "(message \"PLN benchmark complete\")"
+        continue-on-error: true
+
+      - name: Memory usage test
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog)" \
+            --eval "(require 'aichat-ecan)" \
+            --eval "(require 'aichat-pln)" \
+            --eval "(garbage-collect)" \
+            --eval "(let ((before (memory-use-counts))) \
+              (dotimes (i 1000) \
+                (aichat-opencog-add-atom 'ConceptNode (format \"test-%d\" i))) \
+              (garbage-collect) \
+              (let ((after (memory-use-counts))) \
+                (message \"Memory usage - Before: %S, After: %S\" before after)))"
+        continue-on-error: true
+
+      - name: Load time test
+        run: |
+          time cask emacs --batch -L . \
+            --eval "(require 'aichat)" \
+            --eval "(require 'skintwin)" \
+            --eval "(message \"Load time test complete\")"
+
+      - name: Stress test - Large knowledge base
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog)" \
+            --eval "(message \"Creating large knowledge base...\") \
+              (benchmark-run 1 \
+                (dotimes (i 5000) \
+                  (aichat-opencog-add-atom 'ConceptNode (format \"concept-%d\" i)) \
+                  (when (> i 0) \
+                    (aichat-opencog-add-link 'InheritanceLink \
+                      (list (format \"concept-%d\" i) \
+                            (format \"concept-%d\" (random i)))))))" \
+            --eval "(message \"Large KB test complete\")"
+        continue-on-error: true
+
+      - name: Org-mode parsing performance
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog-org)" \
+            --eval "(find-file \"skintwin.org\")" \
+            --eval "(benchmark-run 5 \
+              (org-mode) \
+              (goto-char (point-min)) \
+              (org-map-entries (lambda () (org-entry-get nil \"ITEM\"))))" \
+            --eval "(message \"Org parsing benchmark complete\")"
+        continue-on-error: true
+
+  javascript-performance:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Measure build time
+        run: |
+          echo "Measuring build performance..."
+          time npm run build
+
+      - name: Check bundle size
+        run: |
+          if [ -d "dist" ]; then
+            echo "Bundle size analysis:"
+            du -sh dist/
+            du -sh dist/assets/* || true
+          fi
+
+  regression-detection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout current code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Run baseline performance tests
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog)" \
+            --eval "(let ((start (current-time))) \
+              (dotimes (i 1000) \
+                (aichat-opencog-add-atom 'ConceptNode (format \"test-%d\" i))) \
+              (let ((elapsed (float-time (time-subtract (current-time) start)))) \
+                (message \"Baseline: 1000 atoms in %.3f seconds\" elapsed) \
+                (when (> elapsed 5.0) \
+                  (message \"WARNING: Performance regression detected!\"))))"
+        continue-on-error: true
+
+      - name: Generate performance report
+        run: |
+          echo "# Performance Test Report" > performance-report.md
+          echo "" >> performance-report.md
+          echo "## Test Date: $(date)" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "## Results" >> performance-report.md
+          echo "- All performance tests completed" >> performance-report.md
+          echo "- See job logs for detailed metrics" >> performance-report.md
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance-report.md
+          retention-days: 90

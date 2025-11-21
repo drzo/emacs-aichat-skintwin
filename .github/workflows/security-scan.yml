@@ -1,0 +1,159 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+        continue-on-error: true
+
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Generate audit report
+        run: npm audit --json > npm-audit.json
+        continue-on-error: true
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+        continue-on-error: true
+
+  elisp-security:
+    name: Elisp Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Check for unsafe Elisp patterns
+        run: |
+          echo "Checking for potentially unsafe Elisp patterns..."
+          
+          # Check for eval usage
+          if git grep -n "eval" -- "*.el" | grep -v "defeval" | grep -v ";.*eval"; then
+            echo "Warning: Found eval usage (review for security)"
+          fi
+          
+          # Check for shell-command usage
+          if git grep -n "shell-command" -- "*.el" | grep -v ";.*shell-command"; then
+            echo "Warning: Found shell-command usage (review for security)"
+          fi
+          
+          # Check for call-process
+          if git grep -n "call-process" -- "*.el" | grep -v ";.*call-process"; then
+            echo "Info: Found call-process usage"
+          fi
+          
+          # Check for read from external sources
+          if git grep -n "read-from-string\\|read-from-minibuffer" -- "*.el" | grep -v ";.*read-from"; then
+            echo "Info: Found read-from-* usage"
+          fi
+        continue-on-error: true
+
+      - name: Check for hardcoded credentials
+        run: |
+          echo "Checking for potential hardcoded credentials..."
+          
+          # Check for API keys
+          if git grep -niE "(api[_-]?key|apikey|api[_-]?secret)" -- "*.el" "*.org" | grep -v "your-api-key" | grep -v "example"; then
+            echo "Warning: Found potential API key references"
+          fi
+          
+          # Check for passwords
+          if git grep -niE "password\s*=|passwd\s*=" -- "*.el" | grep -v "prompt"; then
+            echo "Warning: Found potential password assignments"
+          fi
+        continue-on-error: true

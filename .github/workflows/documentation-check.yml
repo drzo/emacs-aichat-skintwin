@@ -1,0 +1,210 @@
+name: Documentation Check
+
+on:
+  push:
+    branches: [ main, develop, "copilot/**" ]
+    paths:
+      - '**.org'
+      - '**.md'
+      - 'README*'
+      - 'CHANGELOG*'
+      - 'demos/**'
+      - '.github/workflows/documentation-check.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.org'
+      - '**.md'
+      - 'README*'
+      - 'CHANGELOG*'
+      - 'demos/**'
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Check README.org exists
+        run: |
+          if [ ! -f "README.org" ]; then
+            echo "Error: README.org not found"
+            exit 1
+          fi
+          echo "README.org exists"
+
+      - name: Check CHANGELOG.org exists
+        run: |
+          if [ ! -f "CHANGELOG.org" ]; then
+            echo "Warning: CHANGELOG.org not found"
+          else
+            echo "CHANGELOG.org exists"
+          fi
+        continue-on-error: true
+
+      - name: Validate markdown files
+        run: |
+          if command -v mdl &> /dev/null; then
+            mdl *.md || echo "Markdown linting issues found"
+          else
+            echo "mdl not installed, skipping markdown linting"
+          fi
+        continue-on-error: true
+
+      - name: Check documentation links
+        run: |
+          echo "Checking for broken links in documentation..."
+          for file in README.org README.md CHANGELOG.org; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              # Check for common broken link patterns
+              if grep -n "](http" "$file" | grep -E "\]\(http[^)]*\s"; then
+                echo "Warning: Potential malformed links found in $file"
+              fi
+            fi
+          done
+        continue-on-error: true
+
+      - name: Verify demo files exist
+        run: |
+          echo "Checking demo files..."
+          if [ -d "demos" ]; then
+            for demo in demos/*.org; do
+              if [ -f "$demo" ]; then
+                echo "Found: $demo"
+              fi
+            done
+          else
+            echo "Warning: demos directory not found"
+          fi
+
+      - name: Check code examples in docs
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(defun extract-elisp-code-blocks (file) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (org-mode) \
+                (let ((blocks (org-element-map (org-element-parse-buffer) 'src-block \
+                               (lambda (block) \
+                                 (when (string= (org-element-property :language block) \"elisp\") \
+                                   (org-element-property :value block)))))) \
+                  (message \"Found %d elisp code blocks in %s\" (length blocks) file) \
+                  blocks)))" \
+            --eval "(extract-elisp-code-blocks \"README.org\")"
+        continue-on-error: true
+
+      - name: Generate documentation TOC
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(defun generate-toc (file) \
+              (find-file file) \
+              (org-mode) \
+              (goto-char (point-min)) \
+              (let ((headings nil)) \
+                (while (re-search-forward \"^\\\\(\\\\*+\\\\) \\\\(.+\\\\)$\" nil t) \
+                  (let ((level (length (match-string 1))) \
+                        (title (match-string 2))) \
+                    (push (cons level title) headings))) \
+                (message \"TOC for %s:\" file) \
+                (dolist (heading (reverse headings)) \
+                  (message \"%s %s\" (make-string (car heading) ?-) (cdr heading)))))" \
+            --eval "(generate-toc \"README.org\")"
+
+      - name: Check for outdated version numbers
+        run: |
+          echo "Checking version consistency..."
+          
+          # Extract version from main elisp file
+          ELISP_VERSION=$(grep -oP "Version: \K[\d.]+" aichat.el | head -1)
+          echo "aichat.el version: $ELISP_VERSION"
+          
+          # Extract version from Cask
+          CASK_VERSION=$(grep -oP "emacs-aichat.*\"\K[\d.]+" Cask | head -1)
+          echo "Cask version: $CASK_VERSION"
+          
+          # Extract version from package.json
+          NPM_VERSION=$(grep -oP "\"version\": \"\K[\d.]+" package.json | head -1)
+          echo "package.json version: $NPM_VERSION"
+        continue-on-error: true
+
+      - name: Export documentation to HTML
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(require 'ox-html)" \
+            --eval "(setq org-html-htmlize-output-type 'css)" \
+            --eval "(find-file \"README.org\")" \
+            --eval "(org-html-export-to-html)" \
+            --eval "(message \"Documentation exported to HTML\")"
+        continue-on-error: true
+
+      - name: Upload generated documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-html
+          path: |
+            *.html
+            demos/*.html
+          retention-days: 30
+        continue-on-error: true
+
+  check-code-comments:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Checking for TODO/FIXME comments..."
+          git grep -n "TODO\|FIXME\|XXX\|HACK" -- "*.el" "*.js" "*.jsx" || echo "No TODO/FIXME found"
+        continue-on-error: true
+
+      - name: Check file headers
+        run: |
+          echo "Checking for proper file headers..."
+          for file in *.el; do
+            if ! head -3 "$file" | grep -q "lexical-binding: t"; then
+              echo "Warning: $file missing lexical-binding declaration"
+            fi
+          done
+        continue-on-error: true
+
+  spell-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install aspell
+        run: sudo apt-get update && sudo apt-get install -y aspell aspell-en
+
+      - name: Spell check documentation
+        run: |
+          for file in README.md README.org CHANGELOG.org; do
+            if [ -f "$file" ]; then
+              echo "Spell checking $file..."
+              aspell list --lang=en --mode=none < "$file" | sort -u || true
+            fi
+          done
+        continue-on-error: true

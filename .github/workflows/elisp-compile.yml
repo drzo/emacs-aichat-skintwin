@@ -1,0 +1,83 @@
+name: Elisp Compile
+
+on:
+  push:
+    branches: [ main, develop, "copilot/**" ]
+    paths:
+      - '**.el'
+      - '.github/workflows/elisp-compile.yml'
+      - 'Cask'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.el'
+      - '.github/workflows/elisp-compile.yml'
+      - 'Cask'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version: ['29.1', '28.2', '27.2']
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: 'snapshot'
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Byte compile all elisp files
+        run: |
+          cask emacs --batch \
+            --eval "(setq byte-compile-error-on-warn nil)" \
+            --eval "(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))" \
+            -f batch-byte-compile \
+            *.el
+
+      - name: Check for byte-compilation warnings
+        run: |
+          cask emacs --batch \
+            --eval "(setq byte-compile-error-on-warn t)" \
+            --eval "(setq byte-compile-warnings t)" \
+            -f batch-byte-compile \
+            aichat.el \
+            aichat-util.el \
+            aichat-opencog.el \
+            aichat-ecan.el \
+            aichat-pln.el \
+            aichat-moses.el \
+            aichat-esn.el \
+            skintwin.el \
+            skintwin-integration.el \
+            skintwin-mode.el
+        continue-on-error: true
+
+      - name: Load test - Load all main files
+        run: |
+          cask emacs --batch \
+            --eval "(add-to-list 'load-path default-directory)" \
+            --eval "(require 'aichat)" \
+            --eval "(require 'skintwin)" \
+            --eval "(message \"Successfully loaded all main modules\")"
+
+      - name: Archive byte-compiled files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-elisp-emacs-${{ matrix.emacs-version }}
+          path: |
+            *.elc
+          retention-days: 7

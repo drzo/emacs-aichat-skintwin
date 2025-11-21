@@ -1,0 +1,96 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-npm-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for npm updates
+        run: |
+          echo "Checking for outdated npm packages..."
+          npm outdated || true
+
+      - name: Update npm dependencies
+        run: |
+          npm update
+          npm audit fix --force || true
+        continue-on-error: true
+
+      - name: Create Pull Request for npm updates
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update npm dependencies'
+          title: 'Update npm dependencies'
+          body: |
+            Automated npm dependency updates
+            
+            This PR updates npm dependencies to their latest versions.
+            Please review the changes and test before merging.
+          branch: dependency-updates/npm
+          delete-branch: true
+        continue-on-error: true
+
+  update-elisp-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Update Cask dependencies
+        run: |
+          cask update || true
+          cask upgrade || true
+        continue-on-error: true
+
+      - name: Check for Emacs package updates
+        run: |
+          cask emacs --batch \
+            --eval "(progn \
+              (require 'package) \
+              (add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages/\") t) \
+              (add-to-list 'package-archives '(\"gnu\" . \"https://elpa.gnu.org/packages/\") t) \
+              (package-initialize) \
+              (package-refresh-contents) \
+              (message \"Package list refreshed\"))"
+        continue-on-error: true
+
+  dependabot-auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    needs: [update-npm-dependencies, update-elisp-dependencies]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable auto-merge for Dependabot PRs
+        run: |
+          echo "Dependabot PR detected"
+          # Auto-merge can be configured in repository settings
+        continue-on-error: true

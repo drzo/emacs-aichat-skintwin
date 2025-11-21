@@ -1,0 +1,102 @@
+name: Elisp Lint
+
+on:
+  push:
+    branches: [ main, develop, "copilot/**" ]
+    paths:
+      - '**.el'
+      - '.github/workflows/elisp-lint.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.el'
+      - '.github/workflows/elisp-lint.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version: ['29.1', '28.2', '27.2']
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: 'snapshot'
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Run checkdoc
+        run: |
+          cask emacs --batch \
+            --eval "(setq checkdoc-spellcheck-documentation-flag nil)" \
+            --eval "(checkdoc-file \"aichat.el\")" \
+            --eval "(checkdoc-file \"aichat-util.el\")" \
+            --eval "(checkdoc-file \"aichat-opencog.el\")" \
+            --eval "(checkdoc-file \"aichat-ecan.el\")" \
+            --eval "(checkdoc-file \"aichat-pln.el\")" \
+            --eval "(checkdoc-file \"aichat-moses.el\")" \
+            --eval "(checkdoc-file \"aichat-esn.el\")" \
+            --eval "(checkdoc-file \"skintwin.el\")" \
+            --eval "(checkdoc-file \"skintwin-integration.el\")" \
+            --eval "(checkdoc-file \"skintwin-mode.el\")"
+        continue-on-error: true
+
+      - name: Install package-lint
+        run: |
+          cask emacs --batch \
+            --eval "(progn \
+              (require 'package) \
+              (add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages/\") t) \
+              (package-initialize) \
+              (unless package-archive-contents (package-refresh-contents)) \
+              (package-install 'package-lint))"
+
+      - name: Run package-lint on main files
+        run: |
+          cask emacs --batch \
+            --eval "(require 'package-lint)" \
+            -f package-lint-batch-and-exit \
+            aichat.el \
+            aichat-util.el \
+            aichat-opencog.el \
+            aichat-ecan.el \
+            aichat-pln.el \
+            aichat-moses.el \
+            aichat-esn.el \
+            skintwin.el \
+            skintwin-integration.el \
+            skintwin-mode.el
+        continue-on-error: true
+
+      - name: Check for trailing whitespace
+        run: |
+          ! git grep -n '[[:space:]]$' -- '*.el' || \
+          (echo "Trailing whitespace found in the above lines" && exit 1)
+        continue-on-error: true
+
+      - name: Check for tabs
+        run: |
+          ! git grep -n $'\t' -- '*.el' || \
+          (echo "Tabs found in the above lines. Use spaces instead." && exit 1)
+        continue-on-error: true
+
+      - name: Check file encoding
+        run: |
+          for file in *.el; do
+            if ! file "$file" | grep -q "UTF-8"; then
+              echo "Non-UTF-8 encoding found in $file"
+              exit 1
+            fi
+          done

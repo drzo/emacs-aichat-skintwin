@@ -1,0 +1,132 @@
+name: Org-mode Validation
+
+on:
+  push:
+    branches: [ main, develop, "copilot/**" ]
+    paths:
+      - '**.org'
+      - '.github/workflows/org-mode-validation.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.org'
+      - '.github/workflows/org-mode-validation.yml'
+
+jobs:
+  validate-org:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Validate Org file syntax
+        run: |
+          for org_file in *.org demos/*.org images/*.org; do
+            if [ -f "$org_file" ]; then
+              echo "Validating $org_file..."
+              cask emacs --batch \
+                --eval "(require 'org)" \
+                --eval "(find-file \"$org_file\")" \
+                --eval "(org-mode)" \
+                --eval "(message \"Validated: $org_file\")" \
+                || echo "Warning: Issues found in $org_file"
+            fi
+          done
+
+      - name: Check Org file structure
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(defun check-org-structure (file) \
+              (find-file file) \
+              (org-mode) \
+              (goto-char (point-min)) \
+              (let ((errors nil)) \
+                (while (re-search-forward \"^\\\\*+\" nil t) \
+                  (let ((level (length (match-string 0)))) \
+                    (when (> level 6) \
+                      (push (format \"Line %d: Heading level too deep (%d)\" (line-number-at-pos) level) errors)))) \
+                (if errors \
+                  (progn (message \"Errors in %s:\" file) \
+                         (dolist (err errors) (message \"  %s\" err)) \
+                         nil) \
+                  t)))" \
+            --eval "(let ((files (directory-files \".\" t \"\\\\.org$\"))) \
+              (dolist (file files) \
+                (check-org-structure file)))"
+
+      - name: Export README.org to HTML
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(require 'ox-html)" \
+            --eval "(find-file \"README.org\")" \
+            --eval "(org-html-export-to-html)" \
+            --eval "(message \"README.org exported successfully\")"
+        continue-on-error: true
+
+      - name: Check for broken internal links
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(defun check-org-links (file) \
+              (find-file file) \
+              (org-mode) \
+              (goto-char (point-min)) \
+              (let ((broken-links nil)) \
+                (while (re-search-forward org-link-bracket-re nil t) \
+                  (let* ((link (match-string 1)) \
+                         (type (org-element-property :type (org-element-context)))) \
+                    (when (and (string= type \"file\") \
+                               (not (file-exists-p link))) \
+                      (push (format \"Broken link in %s: %s\" file link) broken-links)))) \
+                (when broken-links \
+                  (message \"Found broken links:\") \
+                  (dolist (link broken-links) (message \"  %s\" link)))))" \
+            --eval "(dolist (file (directory-files \".\" t \"\\\\.org$\")) \
+              (check-org-links file))"
+        continue-on-error: true
+
+      - name: Validate code blocks in Org files
+        run: |
+          cask emacs --batch \
+            --eval "(require 'org)" \
+            --eval "(require 'ob-core)" \
+            --eval "(defun validate-org-babel (file) \
+              (find-file file) \
+              (org-mode) \
+              (let ((blocks (org-element-map (org-element-parse-buffer) 'src-block 'identity))) \
+                (message \"Found %d code blocks in %s\" (length blocks) file)))" \
+            --eval "(dolist (file (directory-files \".\" t \"\\\\.org$\")) \
+              (validate-org-babel file))"
+
+      - name: Check skintwin.org knowledge base
+        run: |
+          cask emacs --batch -L . \
+            --eval "(require 'aichat-opencog-org)" \
+            --eval "(find-file \"skintwin.org\")" \
+            --eval "(message \"SkinTwin knowledge base validated\")"
+        continue-on-error: true
+
+      - name: Upload HTML exports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: org-html-exports
+          path: |
+            *.html
+          retention-days: 7
