@@ -4,10 +4,14 @@
 
 set -e
 
+# Configuration
+PERFORMANCE_THRESHOLD="${PERFORMANCE_THRESHOLD:-5.0}"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/../.."
 
 echo "=== Performance Test Suite ==="
+echo "Regression threshold: ${PERFORMANCE_THRESHOLD}s"
 
 # Test 1: AtomSpace operations
 echo ""
@@ -83,9 +87,9 @@ cask emacs --batch -L . \
       (aichat-opencog-add-atom 'ConceptNode (format \"test-%d\" i))) \
     (let ((elapsed (float-time (time-subtract (current-time) start)))) \
       (message \"Baseline: 1000 atoms in %.3f seconds\" elapsed) \
-      (when (> elapsed 5.0) \
+      (when (> elapsed ${PERFORMANCE_THRESHOLD}) \
         (message \"WARNING: Performance regression detected!\") \
-        (message \"Expected: < 5.0s, Actual: %.3fs\" elapsed))))"
+        (message \"Expected: < ${PERFORMANCE_THRESHOLD}s, Actual: %.3fs\" elapsed))))"
 
 echo ""
 echo "=== Performance Tests Complete ==="

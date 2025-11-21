@@ -35,6 +35,8 @@ jobs:
         run: |
           chmod +x .github/scripts/run-performance-tests.sh
           .github/scripts/run-performance-tests.sh
+        env:
+          PERFORMANCE_THRESHOLD: "5.0"
         continue-on-error: true
 
       - name: Load time test
@@ -111,6 +113,8 @@ jobs:
         run: |
           chmod +x .github/scripts/run-performance-tests.sh
           .github/scripts/run-performance-tests.sh
+        env:
+          PERFORMANCE_THRESHOLD: "5.0"
         continue-on-error: true
 
       - name: Generate performance report

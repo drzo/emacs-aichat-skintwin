@@ -132,17 +132,29 @@ jobs:
         run: |
           echo "Checking version consistency..."
           
-          # Extract version from main elisp file
-          ELISP_VERSION=$(grep -oP "Version: \K[\d.]+" aichat.el | head -1)
-          echo "aichat.el version: $ELISP_VERSION"
+          # Extract version from main elisp file if it exists
+          if [ -f "aichat.el" ]; then
+            ELISP_VERSION=$(grep -oP "Version: \K[\d.]+" aichat.el | head -1 || echo "not found")
+            echo "aichat.el version: $ELISP_VERSION"
+          else
+            echo "aichat.el not found"
+          fi
           
-          # Extract version from Cask
-          CASK_VERSION=$(grep -oP "emacs-aichat.*\"\K[\d.]+" Cask | head -1)
-          echo "Cask version: $CASK_VERSION"
+          # Extract version from Cask if it exists
+          if [ -f "Cask" ]; then
+            CASK_VERSION=$(grep -oP "emacs-aichat.*\"\K[\d.]+" Cask | head -1 || echo "not found")
+            echo "Cask version: $CASK_VERSION"
+          else
+            echo "Cask not found"
+          fi
           
-          # Extract version from package.json
-          NPM_VERSION=$(grep -oP "\"version\": \"\K[\d.]+" package.json | head -1)
-          echo "package.json version: $NPM_VERSION"
+          # Extract version from package.json if it exists
+          if [ -f "package.json" ]; then
+            NPM_VERSION=$(grep -oP "\"version\": \"\K[\d.]+" package.json | head -1 || echo "not found")
+            echo "package.json version: $NPM_VERSION"
+          else
+            echo "package.json not found"
+          fi
         continue-on-error: true
 
       - name: Export documentation to HTML
