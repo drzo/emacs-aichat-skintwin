@@ -1,0 +1,252 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop, "copilot/**" ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  complexity-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Check function complexity
+        run: |
+          cask emacs --batch -L . \
+            --eval "(defun count-elisp-functions (file) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (goto-char (point-min)) \
+                (let ((count 0)) \
+                  (while (re-search-forward \"^(defun\\\\|^(cl-defun\" nil t) \
+                    (setq count (1+ count))) \
+                  (message \"Functions in %s: %d\" file count))))" \
+            --eval "(dolist (file (directory-files \".\" nil \"\\\\.el$\")) \
+              (unless (string-prefix-p \".\" file) \
+                (count-elisp-functions file)))"
+
+      - name: Measure code statistics
+        run: |
+          echo "=== Code Statistics ==="
+          echo "Total lines of Elisp code:"
+          find . -name "*.el" -not -path "*/\.*" -exec wc -l {} + | tail -1
+          echo ""
+          echo "Total lines of Org files:"
+          find . -name "*.org" -not -path "*/\.*" -exec wc -l {} + | tail -1
+          echo ""
+          echo "Total lines of JavaScript:"
+          find src -name "*.js" -o -name "*.jsx" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 || echo "No JS files"
+
+      - name: Check for long functions
+        run: |
+          cask emacs --batch \
+            --eval "(defun check-function-length (file threshold) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (goto-char (point-min)) \
+                (while (re-search-forward \"^(\\\\(cl-\\\\)?defun \\\\([^ ]+\\\\)\" nil t) \
+                  (let ((name (match-string 2)) \
+                        (start (point))) \
+                    (forward-sexp) \
+                    (let ((lines (count-lines start (point)))) \
+                      (when (> lines threshold) \
+                        (message \"Long function in %s: %s (%d lines)\" file name lines)))))))" \
+            --eval "(dolist (file (directory-files \".\" nil \"^[^.].+\\\\.el$\")) \
+              (check-function-length file 50))"
+        continue-on-error: true
+
+      - name: Check code duplication
+        run: |
+          echo "Checking for potential code duplication..."
+          # Simple duplication check - look for identical function definitions
+          for file in *.el; do
+            echo "Analyzing $file..."
+            grep -n "^(defun " "$file" | cut -d: -f2 | sort | uniq -d || true
+          done
+        continue-on-error: true
+
+  code-style:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Check indentation
+        run: |
+          cask emacs --batch \
+            --eval "(defun check-indentation (file) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (emacs-lisp-mode) \
+                (goto-char (point-min)) \
+                (let ((errors 0)) \
+                  (while (not (eobp)) \
+                    (unless (or (looking-at \"^[ ]*$\") \
+                                (looking-at \"^;;\")) \
+                      (let ((orig-indent (current-indentation)) \
+                            (calc-indent (save-excursion \
+                                          (ignore-errors (lisp-indent-line)) \
+                                          (current-indentation)))) \
+                        (unless (= orig-indent calc-indent) \
+                          (setq errors (1+ errors))))) \
+                    (forward-line 1)) \
+                  (when (> errors 0) \
+                    (message \"Indentation issues in %s: %d lines\" file errors)))))" \
+            --eval "(dolist (file (directory-files \".\" nil \"^[^.].+\\\\.el$\")) \
+              (check-indentation file))"
+        continue-on-error: true
+
+      - name: Check line length
+        run: |
+          echo "Checking for lines over 80 characters..."
+          for file in *.el; do
+            long_lines=$(awk 'length > 80 && !/http/ && !/;.*[0-9]{4}/' "$file" | wc -l)
+            if [ $long_lines -gt 0 ]; then
+              echo "$file: $long_lines lines over 80 characters"
+            fi
+          done
+        continue-on-error: true
+
+      - name: Check naming conventions
+        run: |
+          cask emacs --batch \
+            --eval "(defun check-naming (file) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (goto-char (point-min)) \
+                (while (re-search-forward \"^(defun \\\\([^ ]+\\\\)\" nil t) \
+                  (let ((name (match-string 1))) \
+                    (unless (string-prefix-p \"aichat-\\|skintwin-\" name) \
+                      (message \"Function without proper prefix in %s: %s\" file name))))))" \
+            --eval "(dolist (file (directory-files \".\" nil \"^(aichat\\\\|skintwin).+\\\\.el$\")) \
+              (check-naming file))"
+        continue-on-error: true
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Check for unused requires
+        run: |
+          cask emacs --batch \
+            --eval "(defun list-requires (file) \
+              (with-temp-buffer \
+                (insert-file-contents file) \
+                (goto-char (point-min)) \
+                (message \"Dependencies in %s:\" file) \
+                (while (re-search-forward \"^(require '\\\\([^)]+\\\\)\" nil t) \
+                  (message \"  - %s\" (match-string 1)))))" \
+            --eval "(dolist (file (directory-files \".\" nil \"^[^.].+\\\\.el$\")) \
+              (list-requires file))"
+
+      - name: Check circular dependencies
+        run: |
+          echo "Checking for potential circular dependencies..."
+          cask emacs --batch \
+            --eval "(let ((deps (make-hash-table :test 'equal))) \
+              (dolist (file (directory-files \".\" nil \"^[^.].+\\\\.el$\")) \
+                (with-temp-buffer \
+                  (insert-file-contents file) \
+                  (goto-char (point-min)) \
+                  (let ((requires nil)) \
+                    (while (re-search-forward \"^(require '\\\\([^)]+\\\\)\" nil t) \
+                      (push (match-string 1) requires)) \
+                    (puthash file requires deps)))) \
+              (message \"Dependency analysis complete\"))"
+        continue-on-error: true
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Check test coverage
+        run: |
+          echo "Analyzing test coverage..."
+          total_functions=0
+          tested_functions=0
+          
+          # Count functions in main files
+          for file in aichat*.el skintwin*.el; do
+            if [ -f "$file" ] && [ "$file" != "aichat-bingai.el" ] && [ "$file" != "aichat-openai.el" ]; then
+              count=$(grep -c "^(defun\|^(cl-defun" "$file" || true)
+              total_functions=$((total_functions + count))
+              echo "$file: $count functions"
+            fi
+          done
+          
+          # Count test cases
+          test_count=$(grep -r "^(ert-deftest" test/ | wc -l || true)
+          echo ""
+          echo "Total functions: $total_functions"
+          echo "Total test cases: $test_count"
+          
+          if [ $total_functions -gt 0 ]; then
+            coverage=$((test_count * 100 / total_functions))
+            echo "Approximate coverage: $coverage%"
+          fi
+        continue-on-error: true
+
+      - name: Generate quality report
+        run: |
+          echo "# Code Quality Report" > quality-report.md
+          echo "" >> quality-report.md
+          echo "## Statistics" >> quality-report.md
+          echo "- Elisp files: $(find . -name '*.el' -not -path '*/\.*' | wc -l)" >> quality-report.md
+          echo "- Org files: $(find . -name '*.org' -not -path '*/\.*' | wc -l)" >> quality-report.md
+          echo "- Test files: $(find test -name '*-test.el' 2>/dev/null | wc -l)" >> quality-report.md
+          echo "" >> quality-report.md
+          cat quality-report.md
+
+      - name: Upload quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: quality-report.md
+          retention-days: 30

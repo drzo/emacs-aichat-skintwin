@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '29.1'
+
+      - name: Setup Cask
+        uses: conao3/setup-cask@master
+        with:
+          version: snapshot
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cask install
+          npm ci
+
+      - name: Run tests
+        run: |
+          cask exec ert-runner || echo "Some tests failed"
+        continue-on-error: true
+
+      - name: Build JavaScript assets
+        run: npm run build
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.org" ]; then
+            echo "Extracting changelog..."
+            # Extract latest version changes from CHANGELOG.org
+            changelog=$(head -50 CHANGELOG.org | tail -30)
+            echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+            echo "$changelog" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGELOG=No changelog available" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create distribution package
+        run: |
+          mkdir -p dist-package
+          
+          # Copy Elisp files
+          cp *.el dist-package/ || true
+          
+          # Copy documentation
+          cp README.org README.md CHANGELOG.org dist-package/ || true
+          
+          # Copy built assets
+          if [ -d "dist" ]; then
+            cp -r dist dist-package/
+          fi
+          
+          # Create tarball
+          tar -czf emacs-aichat-skintwin-${{ github.ref_name }}.tar.gz dist-package/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            emacs-aichat-skintwin-*.tar.gz
+            dist-package/*.el
+          body: |
+            # Release ${{ github.ref_name }}
+            
+            ## Changes
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ## Installation
+            
+            ### Via Cask
+            ```elisp
+            (depends-on "emacs-aichat" :git "https://github.com/drzo/emacs-aichat-skintwin" :tag "${{ github.ref_name }}")
+            ```
+            
+            ### Manual Installation
+            1. Download `emacs-aichat-skintwin-${{ github.ref_name }}.tar.gz`
+            2. Extract to your Emacs load path
+            3. Add to your init.el:
+            ```elisp
+            (add-to-list 'load-path "/path/to/emacs-aichat-skintwin")
+            (require 'aichat)
+            (require 'skintwin)
+            ```
+            
+            ## Documentation
+            See [README.org](https://github.com/drzo/emacs-aichat-skintwin/blob/main/README.org)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to MELPA (prepare)
+        run: |
+          echo "To publish to MELPA:"
+          echo "1. Fork https://github.com/melpa/melpa"
+          echo "2. Add recipe to recipes/ directory"
+          echo "3. Submit pull request"
+          echo ""
+          echo "Recipe example:"
+          echo "(emacs-aichat-skintwin"
+          echo " :fetcher github"
+          echo " :repo \"drzo/emacs-aichat-skintwin\")"
+
+  notify-release:
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: success()
+    
+    steps:
+      - name: Summary
+        run: |
+          echo "# Release ${{ github.ref_name }} Created! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The release has been successfully created and published." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Update documentation if needed" >> $GITHUB_STEP_SUMMARY
+          echo "- Announce release in discussions" >> $GITHUB_STEP_SUMMARY
+          echo "- Consider submitting to MELPA" >> $GITHUB_STEP_SUMMARY

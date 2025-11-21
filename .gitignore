@@ -15,3 +15,37 @@ tramp
 /eshell/lastdir
 /messages
 /node_modules
+
+# Build artifacts
+/dist
+/dist-package
+*.tar.gz
+*.zip
+
+# Test and coverage artifacts
+/coverage
+/test-results
+/.nyc_output
+
+# CI/CD artifacts
+*-report.md
+npm-audit.json
+quality-report.md
+performance-report.md
+nightly-report.md
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+.directory
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp
+*.log
